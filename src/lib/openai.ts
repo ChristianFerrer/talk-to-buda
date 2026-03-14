@@ -23,7 +23,7 @@ export async function generateBudaResponse(
       { role: 'system', content: systemPrompt },
       ...conversationHistory,
     ],
-    max_tokens: 200,
+    max_tokens: 150,
     temperature: 0.8,
   });
 
