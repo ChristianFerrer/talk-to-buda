@@ -9,7 +9,7 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
     throw new Error('WhatsApp API not configured: missing META_ACCESS_TOKEN or META_PHONE_NUMBER_ID');
   }
 
-  const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`;
+  const url = `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}/messages`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -34,7 +34,7 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
 }
 
 export async function markMessageAsRead(messageId: string): Promise<void> {
-  const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`;
+  const url = `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}/messages`;
 
   await fetch(url, {
     method: 'POST',
@@ -56,7 +56,7 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
  * Requires the incoming message ID to work.
  */
 export async function showTypingIndicator(messageId: string): Promise<void> {
-  const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`;
+  const url = `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}/messages`;
 
   await fetch(url, {
     method: 'POST',
