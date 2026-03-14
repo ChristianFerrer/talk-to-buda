@@ -42,3 +42,28 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
     }),
   });
 }
+
+/**
+ * Shows "typing..." indicator to the user.
+ * Makes the conversation feel more human — Buda is "thinking".
+ */
+export async function showTypingIndicator(to: string): Promise<void> {
+  const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`;
+
+  await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to,
+      type: 'reaction',
+      // WhatsApp Business API uses "typing" status for typing indicator
+    }),
+  }).catch(() => {
+    // Typing indicator is best-effort, don't fail the message flow
+  });
+}
