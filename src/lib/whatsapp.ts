@@ -2,6 +2,13 @@ const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || '';
 const META_PHONE_NUMBER_ID = process.env.META_PHONE_NUMBER_ID || '';
 
 export async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
+  console.log('[whatsapp] Sending message to:', to, 'length:', text.length);
+
+  if (!META_ACCESS_TOKEN || !META_PHONE_NUMBER_ID) {
+    console.error('[whatsapp] MISSING ENV VARS: META_ACCESS_TOKEN=', !!META_ACCESS_TOKEN, 'META_PHONE_NUMBER_ID=', !!META_PHONE_NUMBER_ID);
+    throw new Error('WhatsApp API not configured: missing META_ACCESS_TOKEN or META_PHONE_NUMBER_ID');
+  }
+
   const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`;
 
   const response = await fetch(url, {

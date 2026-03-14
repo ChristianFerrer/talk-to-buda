@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
+  console.log('[webhook] GET verification:', { mode, tokenMatch: token === VERIFY_TOKEN, hasChallenge: !!challenge });
+
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
     return new NextResponse(challenge, { status: 200 });
   }
@@ -35,6 +37,8 @@ export async function POST(request: NextRequest) {
   try {
     const body: WhatsAppWebhookBody = await request.json();
 
+    console.log('[webhook] POST received, object:', body.object);
+
     if (body.object !== 'whatsapp_business_account') {
       return NextResponse.json({ status: 'ok' });
     }
@@ -42,18 +46,27 @@ export async function POST(request: NextRequest) {
     for (const entry of body.entry) {
       for (const change of entry.changes) {
         const messages = change.value.messages;
-        if (!messages) continue;
+        if (!messages) {
+          console.log('[webhook] No messages in change (status update or other event)');
+          continue;
+        }
 
         for (const message of messages) {
+          console.log('[webhook] Message received:', { type: message.type, from: message.from, id: message.id });
           if (message.type !== 'text') continue;
-          await handleTextMessage(message.from, message.text.body, message.id);
+          try {
+            await handleTextMessage(message.from, message.text.body, message.id);
+            console.log('[webhook] Message handled successfully for', message.from);
+          } catch (msgError) {
+            console.error('[webhook] Error handling message:', msgError);
+          }
         }
       }
     }
 
     return NextResponse.json({ status: 'ok' });
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('[webhook] Fatal error:', error);
     return NextResponse.json({ status: 'ok' });
   }
 }
@@ -62,7 +75,13 @@ export async function POST(request: NextRequest) {
 const pendingConfirmations = new Map<string, { type: 'cancel' | 'delete'; expiresAt: number }>();
 
 async function handleTextMessage(from: string, text: string, messageId: string): Promise<void> {
-  await markMessageAsRead(messageId);
+  console.log('[handleMsg] Start:', { from, text: text.substring(0, 50) });
+
+  try {
+    await markMessageAsRead(messageId);
+  } catch (e) {
+    console.error('[handleMsg] markMessageAsRead failed (non-blocking):', e);
+  }
 
   const normalizedText = text.trim().toLowerCase();
 
@@ -88,6 +107,7 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   }
 
   // Ensure user exists
+  console.log('[handleMsg] Ensuring user exists...');
   await ensureUserExists(from);
 
   // Special commands
@@ -104,6 +124,7 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   }
 
   // Rate limiting
+  console.log('[handleMsg] Checking rate limit...');
   const rateLimit = await checkRateLimit(from);
   if (!rateLimit.allowed) {
     if (rateLimit.isPremium || rateLimit.isVip) {
@@ -117,6 +138,7 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   }
 
   // Get user data for scarcity wisdom decisions
+  console.log('[handleMsg] Rate limit passed, getting user data...');
   const { data: user } = await supabase
     .from('users')
     .select('total_messages, is_premium, is_vip')
@@ -183,8 +205,9 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   const history = [...conversationHistory, { role: 'user' as const, content: text }];
 
   // GPT call — the API latency (2-4s) IS the natural "thinking" delay
-  // No artificial delays needed; they risk Vercel's 10s function timeout
+  console.log('[handleMsg] Calling GPT-4o-mini...');
   const response = await generateBudaResponse(systemPrompt, history, 'gpt-4o-mini');
+  console.log('[handleMsg] GPT response received, length:', response.length);
 
   await incrementMessageCount(from);
   await saveMessage(from, text, response, conversationId);
