@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
 const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || '';
-const STRIPE_ANNUAL_PRICE_ID = process.env.STRIPE_ANNUAL_PRICE_ID || '';
+const STRIPE_WEEKLY_PRICE_ID = process.env.STRIPE_WEEKLY_PRICE_ID || '';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token expired' }, { status: 400 });
     }
 
-    // Create Stripe Checkout session
-    const priceId = plan === 'annual' ? STRIPE_ANNUAL_PRICE_ID : STRIPE_PRICE_ID;
+    // Create Stripe Checkout session with 3-day free trial
+    const priceId = plan === 'weekly' ? STRIPE_WEEKLY_PRICE_ID : STRIPE_PRICE_ID;
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -41,6 +41,9 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
+      subscription_data: {
+        trial_period_days: 3,
+      },
       metadata: {
         user_phone: tokenData.user_phone,
         token_id: tokenData.id,

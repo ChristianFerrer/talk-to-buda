@@ -111,7 +111,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   try {
     await sendWhatsAppMessage(
       premiumUser.user_phone,
-      'Tu suscripción Premium ha finalizado. Seguiremos con 7 reflexiones diarias.\n\nSi deseas renovar, escríbeme y te enviaré el enlace.'
+      'Tu suscripción Premium ha finalizado. Seguiremos con 3 reflexiones diarias.\n\nSi deseas renovar, escríbeme y te enviaré el enlace.'
     );
   } catch (error) {
     console.error('Failed to send cancellation message:', error);

@@ -86,7 +86,7 @@ export default function Home() {
       {/* Premium subtle */}
       <section className="py-24 px-6 text-center">
         <p className="text-gray-400 font-light mb-4">
-          Si deseas seguir conversando sin límites, puedes acceder a Premium por 6,99€ al mes.
+          Si deseas seguir conversando sin límites, prueba Premium gratis durante 3 días. Después, desde 1,99€/semana.
         </p>
         <a
           href="/premium"

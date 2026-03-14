@@ -28,14 +28,16 @@ export default function Terms() {
           <h2 className="text-xl font-medium text-gray-800 mt-8">4. Planes y precios</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li><strong>Plan gratuito:</strong> hasta 3 mensajes por día.</li>
+            <li><strong>Plan Premium semanal:</strong> 1,99€ por semana, hasta 50 mensajes por día. Suscripción semanal recurrente.</li>
             <li><strong>Plan Premium mensual:</strong> 6,99€ por mes, hasta 50 mensajes por día. Suscripción mensual recurrente.</li>
-            <li><strong>Plan Premium anual:</strong> 59€ por año, hasta 50 mensajes por día. Suscripción anual recurrente.</li>
+            <li>Todos los planes Premium incluyen un período de prueba gratuito de 3 días.</li>
           </ul>
 
           <h2 className="text-xl font-medium text-gray-800 mt-8">5. Pagos y cancelación</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li>Los pagos se procesan a través de Stripe de forma segura.</li>
-            <li>La suscripción Premium se renueva automáticamente cada mes.</li>
+            <li>La suscripción Premium incluye 3 días de prueba gratuita. No se cobrará nada durante este período.</li>
+            <li>La suscripción se renueva automáticamente al final de cada período (semanal o mensual).</li>
             <li>Puedes cancelar en cualquier momento escribiendo &ldquo;cancelar premium&rdquo; a Buda en WhatsApp.</li>
             <li>Al cancelar, tu acceso Premium seguirá activo hasta el final del período de facturación actual.</li>
             <li>No se ofrecen reembolsos por períodos parciales.</li>

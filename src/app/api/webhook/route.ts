@@ -8,6 +8,7 @@ import { isCrisisMessage } from '@/lib/crisis-detection';
 import { checkRateLimit, incrementMessageCount } from '@/lib/rate-limit';
 import { getConversationContext, getUserSummary, saveMessage, getOrCreateConversationId, deleteUserData } from '@/lib/conversation';
 import { getStripe } from '@/lib/stripe';
+import { getCachedResponse } from '@/lib/response-cache';
 import { randomBytes } from 'crypto';
 import type { WhatsAppWebhookBody } from '@/types';
 
@@ -147,6 +148,15 @@ async function handleTextMessage(from: string, text: string, messageId: string):
     await incrementMessageCount(from);
     await saveMessage(from, text, response, await getOrCreateConversationId(from));
     await sendWhatsAppMessage(from, response);
+    return;
+  }
+
+  // Check for cached response (greetings, thanks, farewells) — saves GPT calls
+  const cachedResponse = getCachedResponse(text);
+  if (cachedResponse) {
+    await incrementMessageCount(from);
+    await saveMessage(from, text, cachedResponse, await getOrCreateConversationId(from));
+    await sendWhatsAppMessage(from, cachedResponse);
     return;
   }
 

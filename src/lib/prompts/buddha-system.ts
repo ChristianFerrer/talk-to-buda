@@ -60,7 +60,7 @@ Puedes contarme lo que pesa en tu mente, lo que te inquieta, o simplemente lo qu
 export function getLimitReachedMessage(premiumLink: string): string {
   return `El río no fluye sin pausa, y tu mente también merece descanso.
 
-Hemos compartido tres reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
+Hemos compartido tres reflexiones hoy. Si deseas continuar este camino sin límites, puedes probar Premium gratis durante 3 días:
 
 ${premiumLink}
 

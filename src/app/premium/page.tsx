@@ -9,7 +9,7 @@ function PremiumContent() {
   const token = searchParams.get('token');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [plan, setPlan] = useState<'monthly' | 'annual'>('monthly');
+  const [plan, setPlan] = useState<'monthly' | 'weekly'>('monthly');
 
   const handleCheckout = async () => {
     if (!token) {
@@ -60,7 +60,7 @@ function PremiumContent() {
           Continúa tu conversación sin límites.
         </p>
         <p className="text-base text-gray-400 font-light mb-12 leading-relaxed">
-          Accede a una experiencia más profunda por 6,99€ al mes.
+          Prueba gratis durante 3 días. Después, desde 1,99€ a la semana.
         </p>
 
         <p className="text-gray-500 font-light mb-10 leading-relaxed max-w-md mx-auto">
@@ -70,35 +70,44 @@ function PremiumContent() {
         {/* Benefits */}
         <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 text-left">
           <div className="space-y-4">
+            <Benefit text="3 días gratis para explorar sin compromiso" />
             <Benefit text="Conversaciones ilimitadas por WhatsApp" />
             <Benefit text="Acceso al Oráculo: enseñanzas profundas de Buda" />
+            <Benefit text="Reflexión matutina diaria personalizada" />
             <Benefit text="Reflexiones más profundas cuando más lo necesites" />
-            <Benefit text="Acceso continuo a tu espacio de calma" />
             <Benefit text="Cancela cuando quieras" />
           </div>
+        </div>
+
+        {/* Trial badge */}
+        <div className="bg-sage-50 border border-sage-200 rounded-xl px-6 py-4 mb-8 max-w-sm mx-auto">
+          <p className="text-sage-700 font-medium text-sm">3 días gratis</p>
+          <p className="text-sage-600 text-xs mt-1">Sin cobro durante el período de prueba. Cancela en cualquier momento.</p>
         </div>
 
         {/* Plan selector */}
         <div className="flex gap-4 mb-8 max-w-sm mx-auto">
           <button
-            onClick={() => setPlan('monthly')}
-            className={`flex-1 rounded-xl p-4 border-2 transition-all ${plan === 'monthly' ? 'border-sage-600 bg-sage-50' : 'border-gray-200 bg-white'}`}
+            onClick={() => setPlan('weekly')}
+            className={`flex-1 rounded-xl p-4 border-2 transition-all ${plan === 'weekly' ? 'border-sage-600 bg-sage-50' : 'border-gray-200 bg-white'}`}
           >
-            <p className="text-2xl font-light text-gray-900">6,99€</p>
-            <p className="text-sm text-gray-400">/ mes</p>
+            <p className="text-2xl font-light text-gray-900">1,99€</p>
+            <p className="text-sm text-gray-400">/ semana</p>
           </button>
           <button
-            onClick={() => setPlan('annual')}
-            className={`flex-1 rounded-xl p-4 border-2 transition-all relative ${plan === 'annual' ? 'border-sage-600 bg-sage-50' : 'border-gray-200 bg-white'}`}
+            onClick={() => setPlan('monthly')}
+            className={`flex-1 rounded-xl p-4 border-2 transition-all relative ${plan === 'monthly' ? 'border-sage-600 bg-sage-50' : 'border-gray-200 bg-white'}`}
           >
-            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sage-600 text-white text-xs px-2 py-0.5 rounded-full">Ahorra 30%</span>
-            <p className="text-2xl font-light text-gray-900">59€</p>
-            <p className="text-sm text-gray-400">/ año</p>
-            <p className="text-xs text-sage-600 mt-1">~4,92€/mes</p>
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sage-600 text-white text-xs px-2 py-0.5 rounded-full">Ahorra 12%</span>
+            <p className="text-2xl font-light text-gray-900">6,99€</p>
+            <p className="text-sm text-gray-400">/ mes</p>
+            <p className="text-xs text-sage-600 mt-1">~1,75€/semana</p>
           </button>
         </div>
         <div className="mb-8">
           <div className="flex justify-center gap-4 text-sm text-gray-400">
+            <span>3 días gratis</span>
+            <span>·</span>
             <span>Sin permanencia</span>
             <span>·</span>
             <span>Cancela cuando quieras</span>
@@ -111,7 +120,7 @@ function PremiumContent() {
           disabled={loading}
           className="w-full sm:w-auto bg-sage-600 hover:bg-sage-700 disabled:bg-gray-300 text-white px-10 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none"
         >
-          {loading ? 'Procesando...' : 'Activar Premium'}
+          {loading ? 'Procesando...' : 'Empezar 3 días gratis'}
         </button>
 
         {error && (
@@ -131,16 +140,16 @@ function PremiumContent() {
         {/* Mini FAQ */}
         <div className="mt-16 text-left space-y-6">
           <FaqItem
+            question="¿Los 3 días son realmente gratis?"
+            answer="Sí, no se te cobrará nada durante los primeros 3 días. Si cancelas antes de que termine el período de prueba, no pagarás nada."
+          />
+          <FaqItem
             question="¿Qué incluye Premium?"
-            answer="Conversaciones ilimitadas con Buda, acceso exclusivo al Oráculo (enseñanzas profundas), y planes mensual o anual."
+            answer="Conversaciones ilimitadas con Buda, acceso exclusivo al Oráculo (enseñanzas profundas), reflexión matutina diaria, y planes semanal o mensual."
           />
           <FaqItem
             question="¿Puedo cancelar cuando quiera?"
             answer="Sí, puedes cancelar en cualquier momento escribiendo 'cancelar premium' a Buda en WhatsApp."
-          />
-          <FaqItem
-            question="¿Cómo se activa mi acceso?"
-            answer="Después del pago, tu número quedará habilitado automáticamente."
           />
         </div>
       </div>

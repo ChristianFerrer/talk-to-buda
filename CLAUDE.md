@@ -22,12 +22,14 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 | **Conversación libre** | El usuario escribe cualquier pensamiento → Buda responde con empatía + metáfora + pregunta reflexiva |
 | **Oráculo** | (Solo Premium) El usuario escribe "Oráculo" → Buda genera una enseñanza breve y profunda (GPT-4o) |
 | **Pausa / Respiración** | Si Buda detecta ansiedad → invita a respirar antes de continuar (vía prompt) |
+| **Reflexión matutina** | (Solo Premium) Mensaje diario a las 7am para usuarios que escribieron ayer |
 
 ## MODELO DE IA
 
 | Aspecto | Decisión |
 |---|---|
 | **Conversación normal** | GPT-4o-mini (bajo costo, buena calidad) |
+| **Respuestas cacheadas** | Saludos, agradecimientos y despedidas → banco de respuestas pre-escritas (0 tokens) |
 | **Oráculo + Resúmenes** | GPT-4o (mayor profundidad) |
 | **Memoria** | Resumen automático + mensajes recientes |
 | **Detección de crisis** | Keywords predefinidas → mensaje fijo (no pasa por GPT) |
@@ -37,9 +39,10 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 | Aspecto | Decisión |
 |---|---|
 | **Free** | 3 mensajes/día |
+| **Premium semanal** | 1,99€/semana, 50 mensajes/día |
 | **Premium mensual** | 6,99€/mes, 50 mensajes/día |
-| **Premium anual** | 59€/año, 50 mensajes/día |
-| **Pasarela** | Stripe Checkout (suscripción recurrente) |
+| **Trial** | 3 días gratis en todos los planes Premium |
+| **Pasarela** | Stripe Checkout (suscripción recurrente con trial) |
 | **Activación** | Link con token temporal enviado por WhatsApp → landing → Stripe |
 | **Cancelación** | Desde WhatsApp: "cancelar premium" → confirmación → cancelación vía API Stripe |
 | **Renovación** | Automática por Stripe. Si falla cobro → desactivar premium |
@@ -137,11 +140,11 @@ Se informa al usuario sobre cómo cancelar en todos los momentos relevantes:
 
 ### Contenido
 - Título: "Habla con Buda Premium"
-- Subtítulo: "Continúa tu conversación sin límites. Accede a una experiencia más profunda por 6,99€ al mes."
-- Beneficios: conversaciones ilimitadas, reflexiones profundas, acceso continuo, cancela cuando quieras
-- Precio: 6,99€/mes o 59€/año claramente mostrado
-- CTA: "Activar Premium" → Stripe Checkout
-- FAQ: 3 preguntas
+- Subtítulo: "Prueba gratis durante 3 días. Después, desde 1,99€ a la semana."
+- Beneficios: 3 días gratis, conversaciones ilimitadas, oráculo, reflexión matutina, cancela cuando quieras
+- Precio: 1,99€/semana o 6,99€/mes claramente mostrado
+- CTA: "Empezar 3 días gratis" → Stripe Checkout (con trial_period_days: 3)
+- FAQ: 3 preguntas (incluye una sobre el trial)
 - Nota de confianza sobre que no reemplaza ayuda profesional
 - Info de cancelación: "Escribe 'cancelar premium' en WhatsApp en cualquier momento"
 
@@ -270,13 +273,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_ID=
-STRIPE_ANNUAL_PRICE_ID=
+STRIPE_WEEKLY_PRICE_ID=
 META_VERIFY_TOKEN=
 META_ACCESS_TOKEN=
 META_PHONE_NUMBER_ID=
 DASHBOARD_PASSWORD=
 NEXT_PUBLIC_WHATSAPP_NUMBER=
 NEXT_PUBLIC_APP_URL=
+CRON_SECRET=
 ```
 
 ## ESTRUCTURA DEL PROYECTO
@@ -292,7 +296,9 @@ talk-to-buda/
 │   │   │   ├── checkout/route.ts       ← Crear sesión Stripe
 │   │   │   └── webhook/route.ts        ← Webhooks Stripe
 │   │   ├── dashboard/route.ts          ← API datos dashboard
-│   │   └── vip/route.ts               ← API gestión VIP
+│   │   ├── vip/route.ts               ← API gestión VIP
+│   │   └── cron/
+│   │       └── morning-message/route.ts ← Cron mensaje matutino (7am)
 │   ├── premium/
 │   │   ├── page.tsx                    ← Landing premium
 │   │   ├── success/page.tsx            ← Éxito pago
@@ -307,7 +313,9 @@ talk-to-buda/
 │   ├── stripe.ts                       ← Cliente Stripe
 │   ├── conversation.ts                 ← Memoria/resúmenes
 │   ├── crisis-detection.ts             ← Keywords + msg fijo
-│   ├── rate-limit.ts                   ← Límites 7/50 msgs
+│   ├── rate-limit.ts                   ← Límites 3/50 msgs
+│   ├── response-cache.ts              ← Respuestas cacheadas (saludos, gracias, despedidas)
+│   ├── morning-message.ts             ← Mensaje matutino para premium
 │   ├── data-retention.ts              ← Limpieza automática
 │   └── prompts/
 │       ├── buddha-system.ts            ← Prompt personalidad
@@ -331,14 +339,16 @@ talk-to-buda/
 
 ## COSTOS ESTIMADOS
 
-### Por usuario premium activo/mes (modelo híbrido)
-- GPT-4o-mini (conversación): ~$0.30
-- GPT-4o (oráculo + resúmenes): ~$0.10
-- **Total IA**: ~$0.40/mes
-- **Ingreso neto** (después de Stripe): ~$3.69
-- **Margen**: ~$3.29 (~89%)
+### Por usuario premium activo/mes (modelo híbrido con caché)
+- GPT-4o-mini (conversación, ~40% cacheado): ~$0.08
+- GPT-4o (oráculo + resúmenes): ~$0.05
+- Mensaje matutino (pre-escrito, 0 tokens): $0
+- **Total IA**: ~$0.13/mes
+- **Ingreso neto mensual** (después de Stripe): ~6,54€
+- **Ingreso neto semanal** (después de Stripe): ~1,74€ (~7,50€/mes)
+- **Margen**: ~85-90%
 
 ### Infraestructura inicial
 - WhatsApp Meta Cloud API: gratis (primeras 1000 conversaciones/mes)
 - Supabase: gratis (free tier)
-- Vercel: gratis (hobby tier)
+- Vercel: gratis (hobby tier, incluye Cron Jobs)
