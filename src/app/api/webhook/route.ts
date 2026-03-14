@@ -43,6 +43,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: 'ok' });
     }
 
+    // Process messages in background — respond 200 to Meta immediately
+    // to avoid Vercel function timeout (10s hobby plan) causing Meta to
+    // stop sending webhooks after repeated failures
     for (const entry of body.entry) {
       for (const change of entry.changes) {
         const messages = change.value.messages;
@@ -50,7 +53,9 @@ export async function POST(request: NextRequest) {
 
         for (const message of messages) {
           if (message.type !== 'text') continue;
-          await handleTextMessage(message.from, message.text.body, message.id);
+          handleTextMessage(message.from, message.text.body, message.id).catch(err => {
+            console.error('Message handler error:', err);
+          });
         }
       }
     }
@@ -146,11 +151,12 @@ async function handleTextMessage(from: string, text: string, messageId: string):
       return;
     }
 
-    // Oracle: show typing + delay for gravitas
+    // Oracle: show typing + delay in parallel with GPT (avoids timeout)
     await showTypingIndicator(from);
-    await delay(getResponseDelay(totalMessages));
-
-    const response = await generateBudaResponse(ORACLE_SYSTEM_PROMPT, [{ role: 'user', content: 'Oráculo' }], 'gpt-4o');
+    const [response] = await Promise.all([
+      generateBudaResponse(ORACLE_SYSTEM_PROMPT, [{ role: 'user', content: 'Oráculo' }], 'gpt-4o'),
+      delay(getResponseDelay(totalMessages)),
+    ]);
     await incrementMessageCount(from);
     await saveMessage(from, text, response, await getOrCreateConversationId(from));
     await sendWhatsAppMessage(from, response);
@@ -196,13 +202,13 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   const systemPrompt = getBuddhaSystemPrompt(summary || undefined, undefined, depthInstruction);
   const history = [...conversationHistory, { role: 'user' as const, content: text }];
 
-  // Show typing indicator while GPT processes
+  // Show typing indicator + run delay IN PARALLEL with GPT call
+  // This avoids adding delay time on top of GPT time (prevents Vercel timeout)
   await showTypingIndicator(from);
-
-  const response = await generateBudaResponse(systemPrompt, history, 'gpt-4o-mini');
-
-  // Variable delay — makes Buda feel like a thinking being, not an API
-  await delay(getResponseDelay(totalMessages));
+  const [response] = await Promise.all([
+    generateBudaResponse(systemPrompt, history, 'gpt-4o-mini'),
+    delay(getResponseDelay(totalMessages)),
+  ]);
 
   await incrementMessageCount(from);
   await saveMessage(from, text, response, conversationId);
@@ -210,7 +216,6 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   // Scarcity Wisdom: occasionally split into prelude + main response
   if (shouldSplitResponse(totalMessages)) {
     await sendWhatsAppMessage(from, getPreludeMessage());
-    await showTypingIndicator(from);
     await delay(getSplitDelay());
   }
 
