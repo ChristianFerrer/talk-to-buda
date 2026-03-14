@@ -51,10 +51,11 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
 }
 
 /**
- * Shows "typing..." indicator to the user.
- * Makes the conversation feel more human — Buda is "thinking".
+ * Shows "typing..." indicator to the user by marking the message as read
+ * with a typing indicator. Makes the conversation feel more human.
+ * Requires the incoming message ID to work.
  */
-export async function showTypingIndicator(to: string): Promise<void> {
+export async function showTypingIndicator(messageId: string): Promise<void> {
   const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`;
 
   await fetch(url, {
@@ -65,10 +66,11 @@ export async function showTypingIndicator(to: string): Promise<void> {
     },
     body: JSON.stringify({
       messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to,
-      type: 'reaction',
-      // WhatsApp Business API uses "typing" status for typing indicator
+      status: 'read',
+      message_id: messageId,
+      typing_indicator: {
+        type: 'text',
+      },
     }),
   }).catch(() => {
     // Typing indicator is best-effort, don't fail the message flow

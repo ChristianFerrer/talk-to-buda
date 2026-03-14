@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { sendWhatsAppMessage, markMessageAsRead } from '@/lib/whatsapp';
+import { sendWhatsAppMessage, markMessageAsRead, showTypingIndicator } from '@/lib/whatsapp';
 import { generateBudaResponse } from '@/lib/openai';
 import { getBuddhaSystemPrompt, WELCOME_MESSAGE, getLimitReachedMessage, getPremiumLimitMessage, getCancelConfirmationMessage, getCancelledMessage, getDeleteDataConfirmationMessage, getDataDeletedMessage, CRISIS_MESSAGE } from '@/lib/prompts/buddha-system';
 import { ORACLE_SYSTEM_PROMPT } from '@/lib/prompts/oracle';
@@ -78,9 +78,10 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   console.log('[handleMsg] Start:', { from, text: text.substring(0, 50) });
 
   try {
-    await markMessageAsRead(messageId);
+    // Show typing indicator (also marks message as read)
+    await showTypingIndicator(messageId);
   } catch (e) {
-    console.error('[handleMsg] markMessageAsRead failed (non-blocking):', e);
+    console.error('[handleMsg] showTypingIndicator failed (non-blocking):', e);
   }
 
   const normalizedText = text.trim().toLowerCase();
