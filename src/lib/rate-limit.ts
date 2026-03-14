@@ -17,7 +17,7 @@ export async function checkRateLimit(userPhone: string): Promise<RateLimitResult
     .from('users')
     .select('*')
     .eq('user_phone', userPhone)
-    .single<User>();
+    .maybeSingle<User>();
 
   if (!user) {
     return { allowed: true, remaining: FREE_DAILY_LIMIT - 1, limit: FREE_DAILY_LIMIT, isPremium: false, isVip: false };
@@ -41,7 +41,7 @@ export async function incrementMessageCount(userPhone: string): Promise<void> {
     .from('users')
     .select('last_message_date, message_count_today, total_messages')
     .eq('user_phone', userPhone)
-    .single();
+    .maybeSingle();
 
   const currentCount = user?.last_message_date === today ? (user.message_count_today || 0) : 0;
   const totalMessages = (user?.total_messages as number) || 0;

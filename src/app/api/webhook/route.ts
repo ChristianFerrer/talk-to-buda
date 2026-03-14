@@ -121,7 +121,7 @@ async function handleTextMessage(from: string, text: string, messageId: string):
     .from('users')
     .select('total_messages, is_premium, is_vip')
     .eq('user_phone', from)
-    .single();
+    .maybeSingle();
 
   const totalMessages = user?.total_messages || 0;
 
@@ -202,7 +202,7 @@ async function ensureUserExists(phone: string): Promise<void> {
     .from('users')
     .select('user_phone')
     .eq('user_phone', phone)
-    .single();
+    .maybeSingle();
 
   if (!data) {
     await supabase.from('users').insert({
@@ -238,7 +238,7 @@ async function handleCancelConfirmed(from: string): Promise<void> {
     .from('premium_users')
     .select('stripe_subscription_id')
     .eq('user_phone', from)
-    .single();
+    .maybeSingle();
 
   if (premiumUser?.stripe_subscription_id) {
     try {

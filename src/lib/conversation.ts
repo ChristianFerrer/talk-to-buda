@@ -34,7 +34,7 @@ export async function getUserSummary(userPhone: string): Promise<string | null> 
     .from('user_summaries')
     .select('summary_text')
     .eq('user_phone', userPhone)
-    .single();
+    .maybeSingle();
 
   return data?.summary_text || null;
 }
@@ -101,7 +101,7 @@ export async function getOrCreateConversationId(userPhone: string): Promise<stri
     .eq('user_phone', userPhone)
     .order('timestamp', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (lastMessage) {
     const lastTime = new Date(lastMessage.timestamp).getTime();

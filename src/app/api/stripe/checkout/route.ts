@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       .select('*')
       .eq('token', token)
       .eq('used', false)
-      .single();
+      .maybeSingle();
 
     if (!tokenData) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });

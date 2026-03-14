@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .select('user_phone')
       .eq('user_phone', phone)
-      .single();
+      .maybeSingle();
 
     if (!existingUser) {
       await supabase.from('users').insert({
@@ -91,7 +91,7 @@ export async function DELETE(request: NextRequest) {
       .from('premium_users')
       .select('status')
       .eq('user_phone', phone)
-      .single();
+      .maybeSingle();
 
     const hasPaidPremium = premiumUser?.status === 'active';
 

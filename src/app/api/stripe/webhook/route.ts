@@ -94,7 +94,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     .from('premium_users')
     .select('user_phone')
     .eq('stripe_subscription_id', subscription.id)
-    .single();
+    .maybeSingle();
 
   if (!premiumUser) return;
 
@@ -129,7 +129,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .from('premium_users')
     .select('user_phone')
     .eq('stripe_subscription_id', subscriptionId)
-    .single();
+    .maybeSingle();
 
   if (!premiumUser) return;
 
