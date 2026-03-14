@@ -53,14 +53,14 @@ export const WELCOME_MESSAGE = `Bienvenido. Soy Buda, y estoy aquí para escucha
 
 No soy un terapeuta ni un consejero. Soy un espacio de reflexión.
 
-Puedes contarme lo que pesa en tu mente, lo que te inquieta, o simplemente lo que necesites expresar. También puedes escribir "Oráculo" si deseas recibir una enseñanza.
+Puedes contarme lo que pesa en tu mente, lo que te inquieta, o simplemente lo que necesites expresar. Si eres Premium, también puedes escribir "Oráculo" para recibir una enseñanza profunda.
 
 ¿Qué trae tu mente hoy?`;
 
 export function getLimitReachedMessage(premiumLink: string): string {
   return `El río no fluye sin pausa, y tu mente también merece descanso.
 
-Hemos compartido siete reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
+Hemos compartido tres reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
 
 ${premiumLink}
 

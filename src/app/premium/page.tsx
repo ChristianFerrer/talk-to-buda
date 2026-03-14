@@ -9,6 +9,7 @@ function PremiumContent() {
   const token = searchParams.get('token');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [plan, setPlan] = useState<'monthly' | 'annual'>('monthly');
 
   const handleCheckout = async () => {
     if (!token) {
@@ -23,7 +24,7 @@ function PremiumContent() {
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, plan }),
       });
 
       const data = await response.json();
@@ -59,7 +60,7 @@ function PremiumContent() {
           Continúa tu conversación sin límites.
         </p>
         <p className="text-base text-gray-400 font-light mb-12 leading-relaxed">
-          Accede a una experiencia más profunda por 4€ al mes.
+          Accede a una experiencia más profunda por 6,99€ al mes.
         </p>
 
         <p className="text-gray-500 font-light mb-10 leading-relaxed max-w-md mx-auto">
@@ -70,18 +71,34 @@ function PremiumContent() {
         <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 text-left">
           <div className="space-y-4">
             <Benefit text="Conversaciones ilimitadas por WhatsApp" />
+            <Benefit text="Acceso al Oráculo: enseñanzas profundas de Buda" />
             <Benefit text="Reflexiones más profundas cuando más lo necesites" />
             <Benefit text="Acceso continuo a tu espacio de calma" />
             <Benefit text="Cancela cuando quieras" />
           </div>
         </div>
 
-        {/* Price */}
+        {/* Plan selector */}
+        <div className="flex gap-4 mb-8 max-w-sm mx-auto">
+          <button
+            onClick={() => setPlan('monthly')}
+            className={`flex-1 rounded-xl p-4 border-2 transition-all ${plan === 'monthly' ? 'border-sage-600 bg-sage-50' : 'border-gray-200 bg-white'}`}
+          >
+            <p className="text-2xl font-light text-gray-900">6,99€</p>
+            <p className="text-sm text-gray-400">/ mes</p>
+          </button>
+          <button
+            onClick={() => setPlan('annual')}
+            className={`flex-1 rounded-xl p-4 border-2 transition-all relative ${plan === 'annual' ? 'border-sage-600 bg-sage-50' : 'border-gray-200 bg-white'}`}
+          >
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sage-600 text-white text-xs px-2 py-0.5 rounded-full">Ahorra 30%</span>
+            <p className="text-2xl font-light text-gray-900">59€</p>
+            <p className="text-sm text-gray-400">/ año</p>
+            <p className="text-xs text-sage-600 mt-1">~4,92€/mes</p>
+          </button>
+        </div>
         <div className="mb-8">
-          <p className="text-4xl font-light text-gray-900">4€<span className="text-lg text-gray-400"> / mes</span></p>
-          <div className="flex justify-center gap-4 mt-3 text-sm text-gray-400">
-            <span>Suscripción mensual</span>
-            <span>·</span>
+          <div className="flex justify-center gap-4 text-sm text-gray-400">
             <span>Sin permanencia</span>
             <span>·</span>
             <span>Cancela cuando quieras</span>
@@ -115,7 +132,7 @@ function PremiumContent() {
         <div className="mt-16 text-left space-y-6">
           <FaqItem
             question="¿Qué incluye Premium?"
-            answer="Conversaciones ilimitadas con Buda por WhatsApp mientras tu suscripción esté activa."
+            answer="Conversaciones ilimitadas con Buda, acceso exclusivo al Oráculo (enseñanzas profundas), y planes mensual o anual."
           />
           <FaqItem
             question="¿Puedo cancelar cuando quiera?"

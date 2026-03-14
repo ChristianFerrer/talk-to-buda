@@ -27,7 +27,7 @@ export default function Home() {
           Hablar con Buda en WhatsApp
         </a>
         <p className="mt-6 text-sm text-gray-400">
-          Gratis hasta 7 mensajes al día.
+          Gratis hasta 3 mensajes al día.
         </p>
       </section>
 
@@ -86,7 +86,7 @@ export default function Home() {
       {/* Premium subtle */}
       <section className="py-24 px-6 text-center">
         <p className="text-gray-400 font-light mb-4">
-          Si deseas seguir conversando sin límites, puedes acceder a Premium por 4€ al mes.
+          Si deseas seguir conversando sin límites, puedes acceder a Premium por 6,99€ al mes.
         </p>
         <a
           href="/premium"
@@ -109,7 +109,7 @@ export default function Home() {
             />
             <FaqItem
               question="¿Es gratis?"
-              answer="Sí, puedes empezar gratis con hasta 7 mensajes al día."
+              answer="Sí, puedes empezar gratis con hasta 3 mensajes al día."
             />
             <FaqItem
               question="¿Reemplaza terapia o ayuda profesional?"

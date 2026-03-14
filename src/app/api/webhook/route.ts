@@ -128,8 +128,21 @@ async function handleTextMessage(from: string, text: string, messageId: string):
     return;
   }
 
-  // Oracle mode
+  // Oracle mode (premium only)
   if (normalizedText === 'oráculo' || normalizedText === 'oraculo' || normalizedText === 'oracle') {
+    const { data: oracleUser } = await supabase
+      .from('users')
+      .select('is_premium, is_vip')
+      .eq('user_phone', from)
+      .single();
+
+    if (!oracleUser?.is_premium && !oracleUser?.is_vip) {
+      const token = await generatePremiumToken(from);
+      const premiumLink = `${APP_URL}/premium?token=${token}`;
+      await sendWhatsAppMessage(from, `El Oráculo es una experiencia exclusiva para quienes caminan el sendero Premium.\n\nSi deseas acceder a enseñanzas más profundas, puedes hacerlo aquí:\n\n${premiumLink}`);
+      return;
+    }
+
     const response = await generateBudaResponse(ORACLE_SYSTEM_PROMPT, [{ role: 'user', content: 'Oráculo' }], 'gpt-4o');
     await incrementMessageCount(from);
     await saveMessage(from, text, response, await getOrCreateConversationId(from));

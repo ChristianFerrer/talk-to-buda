@@ -4,10 +4,11 @@ import { supabase } from '@/lib/supabase';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
 const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || '';
+const STRIPE_ANNUAL_PRICE_ID = process.env.STRIPE_ANNUAL_PRICE_ID || '';
 
 export async function POST(request: NextRequest) {
   try {
-    const { token } = await request.json();
+    const { token, plan } = await request.json();
 
     if (!token) {
       return NextResponse.json({ error: 'Token is required' }, { status: 400 });
@@ -30,12 +31,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe Checkout session
+    const priceId = plan === 'annual' ? STRIPE_ANNUAL_PRICE_ID : STRIPE_PRICE_ID;
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [
         {
-          price: STRIPE_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],

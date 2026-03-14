@@ -20,7 +20,7 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 | Modo | Descripción |
 |---|---|
 | **Conversación libre** | El usuario escribe cualquier pensamiento → Buda responde con empatía + metáfora + pregunta reflexiva |
-| **Oráculo** | El usuario escribe "Oráculo" → Buda genera una enseñanza breve y profunda (GPT-4o) |
+| **Oráculo** | (Solo Premium) El usuario escribe "Oráculo" → Buda genera una enseñanza breve y profunda (GPT-4o) |
 | **Pausa / Respiración** | Si Buda detecta ansiedad → invita a respirar antes de continuar (vía prompt) |
 
 ## MODELO DE IA
@@ -36,8 +36,9 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 
 | Aspecto | Decisión |
 |---|---|
-| **Free** | 7 mensajes/día |
-| **Premium** | 4€/mes, 50 mensajes/día |
+| **Free** | 3 mensajes/día |
+| **Premium mensual** | 6,99€/mes, 50 mensajes/día |
+| **Premium anual** | 59€/año, 50 mensajes/día |
 | **Pasarela** | Stripe Checkout (suscripción recurrente) |
 | **Activación** | Link con token temporal enviado por WhatsApp → landing → Stripe |
 | **Cancelación** | Desde WhatsApp: "cancelar premium" → confirmación → cancelación vía API Stripe |
@@ -46,11 +47,11 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 
 ### Mensaje de límite alcanzado (estilo Buda)
 
-Cuando el usuario alcanza los 7 mensajes gratuitos, Buda responde en su tono filosófico diciendo que el espacio del día ha terminado, e incluye el link de premium como invitación suave.
+Cuando el usuario alcanza los 3 mensajes gratuitos, Buda responde en su tono filosófico diciendo que el espacio del día ha terminado, e incluye el link de premium como invitación suave.
 
 Ejemplo:
 > "El río no fluye sin pausa, y tu mente también merece descanso.
-> Hemos compartido siete reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
+> Hemos compartido tres reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
 > [link premium]
 > Si no, estaré aquí mañana con la misma calma."
 
@@ -136,9 +137,9 @@ Se informa al usuario sobre cómo cancelar en todos los momentos relevantes:
 
 ### Contenido
 - Título: "Habla con Buda Premium"
-- Subtítulo: "Continúa tu conversación sin límites. Accede a una experiencia más profunda por 4€ al mes."
+- Subtítulo: "Continúa tu conversación sin límites. Accede a una experiencia más profunda por 6,99€ al mes."
 - Beneficios: conversaciones ilimitadas, reflexiones profundas, acceso continuo, cancela cuando quieras
-- Precio: 4€/mes claramente mostrado
+- Precio: 6,99€/mes o 59€/año claramente mostrado
 - CTA: "Activar Premium" → Stripe Checkout
 - FAQ: 3 preguntas
 - Nota de confianza sobre que no reemplaza ayuda profesional
@@ -228,7 +229,7 @@ Protegido con contraseña (variable de entorno DASHBOARD_PASSWORD)
 
 | Comando | Acción |
 |---|---|
-| "Oráculo" | Enseñanza generada por GPT-4o |
+| "Oráculo" | Enseñanza generada por GPT-4o (solo Premium) |
 | "cancelar premium" → "confirmar cancelación" | Cancela suscripción vía Stripe API |
 | "borrar mis datos" → "confirmar borrado" | Elimina todos los datos del usuario |
 
@@ -269,6 +270,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_ID=
+STRIPE_ANNUAL_PRICE_ID=
 META_VERIFY_TOKEN=
 META_ACCESS_TOKEN=
 META_PHONE_NUMBER_ID=
