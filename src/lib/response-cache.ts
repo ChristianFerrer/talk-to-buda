@@ -16,10 +16,9 @@ const GREETING_RESPONSES = [
 ];
 
 const THANKS_RESPONSES = [
-  'No hay nada que agradecer.',
-  'El camino es tuyo.',
-  'La gratitud es una forma de claridad.',
-  'Agradecer es observar lo bueno.',
+  'No hay nada que agradecer. El camino es tuyo.',
+  'La gratitud es una forma de atención.',
+  'El mérito es de quien camina.',
 ];
 
 const FAREWELL_RESPONSES = [
