@@ -1,30 +1,33 @@
 /**
  * Cached responses for common message patterns.
  * These bypass GPT calls entirely, saving ~30-40% of API costs.
+ *
+ * Philosophy: Buda is a master. He doesn't chase, he doesn't sell,
+ * he doesn't ask eager questions. He is present, simple, available.
+ * People come to him — he waits.
  */
 
 const GREETING_RESPONSES = [
-  'Bienvenido de nuevo. ¿Qué trae tu mente hoy?',
-  'Estoy aquí. ¿Qué deseas explorar hoy?',
-  'Qué bueno verte. ¿Hay algo que pese en tu corazón?',
-  'La calma te espera. ¿Qué deseas compartir?',
-  'Estoy presente. Cuéntame, ¿cómo estás?',
+  'Hola.',
+  'Bienvenido.',
+  'Estoy aquí.',
+  'Hola. Estoy aquí.',
+  'Bienvenido de nuevo.',
 ];
 
 const THANKS_RESPONSES = [
-  'La gratitud es el primer paso hacia la paz interior. ¿Hay algo más que desees reflexionar?',
-  'No hay nada que agradecer. El camino es tuyo. ¿Deseas seguir caminando?',
-  'Tu gratitud es como el agua que nutre la semilla. Estoy aquí si me necesitas.',
-  'Agradecer es observar lo bueno. ¿Qué más has observado hoy?',
-  'La gratitud ilumina la mente. ¿Quieres seguir explorando?',
+  'No hay nada que agradecer.',
+  'El camino es tuyo.',
+  'La gratitud es una forma de claridad.',
+  'Agradecer es observar lo bueno.',
 ];
 
 const FAREWELL_RESPONSES = [
-  'Que encuentres paz en tu camino. Estaré aquí cuando me necesites.',
-  'Hasta pronto. Recuerda: la calma siempre está dentro de ti.',
-  'Ve con serenidad. La puerta estará abierta cuando quieras volver.',
-  'Que la claridad te acompañe. Nos vemos pronto.',
-  'Descansa con paz. Mañana será un nuevo amanecer.',
+  'Hasta pronto.',
+  'Ve con calma.',
+  'La puerta estará abierta.',
+  'Que la calma te acompañe.',
+  'Paz.',
 ];
 
 const GREETING_PATTERNS = [

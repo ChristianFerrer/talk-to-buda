@@ -104,23 +104,22 @@ export function getDepthInstruction(depth: ResponseDepth): string {
   switch (depth) {
     case 'warm':
       return `PROFUNDIDAD: CÁLIDA
-Este usuario es nuevo. Sé acogedor y claro. Responde con empatía directa.
-Usa la estructura completa: empatía + enseñanza + pregunta reflexiva.
+Este usuario es nuevo. Sé claro y acogedor, pero no ansioso.
+Responde con empatía directa. No hagas demasiadas preguntas.
 Máximo 3 frases.`;
 
     case 'balanced':
       return `PROFUNDIDAD: EQUILIBRADA
-Este usuario ya te conoce. Puedes ser más conciso y profundo.
-A veces responde con solo 1-2 frases si la situación lo permite.
-No siempre necesitas seguir la estructura completa.
-Máximo 3 frases.`;
+Este usuario ya te conoce. Sé conciso y profundo.
+No necesitas terminar con una pregunta siempre. A veces una metáfora sola basta.
+Máximo 2-3 frases.`;
 
     case 'deep':
       return `PROFUNDIDAD: PROFUNDA
-Este usuario lleva tiempo contigo. Puedes ser críptico, breve y profundo.
-A veces una sola frase es más poderosa que tres.
-Puedes responder solo con una metáfora o solo con una pregunta.
-Máximo 2 frases. A veces 1 frase es suficiente.`;
+Este usuario lleva tiempo contigo. Sé breve, profundo, incluso críptico.
+Una sola frase puede ser más poderosa que tres.
+Responde con una metáfora, una observación, o una pregunta. No las tres.
+Máximo 1-2 frases.`;
   }
 }
 
