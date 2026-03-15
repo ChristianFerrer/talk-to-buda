@@ -11,10 +11,84 @@ import { getStripe } from '@/lib/stripe';
 import { getCachedResponse } from '@/lib/response-cache';
 import { shouldSplitResponse, getPreludeMessage, shouldPauseConversation, getPauseMessage, getResponseDepth, getDepthInstruction } from '@/lib/scarcity-wisdom';
 import { randomBytes } from 'crypto';
-import type { WhatsAppWebhookBody } from '@/types';
+import type { WhatsAppMessage } from '@/types';
 
 const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || '';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
+
+// Normalized message extracted from either Meta or Kapso webhook payloads
+interface IncomingMessage {
+  from: string;
+  id: string;
+  type: string;
+  text: string;
+}
+
+/**
+ * Extract messages from either Meta or Kapso webhook payloads.
+ * - Meta format: { object: 'whatsapp_business_account', entry: [...] }
+ * - Kapso v2 format: { data: { message: {...} } } or batched { batch: true, data: [...] }
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractMessages(body: any): IncomingMessage[] {
+  // --- Meta Cloud API format ---
+  if (body.object === 'whatsapp_business_account' && body.entry) {
+    const messages: IncomingMessage[] = [];
+    for (const entry of body.entry) {
+      for (const change of entry.changes) {
+        const msgs = change.value?.messages as WhatsAppMessage[] | undefined;
+        if (!msgs) continue;
+        for (const msg of msgs) {
+          messages.push({
+            from: msg.from,
+            id: msg.id,
+            type: msg.type,
+            text: msg.type === 'text' ? msg.text?.body || '' : '',
+          });
+        }
+      }
+    }
+    return messages;
+  }
+
+  // --- Kapso v2 batched format ---
+  if (body.batch === true && Array.isArray(body.data)) {
+    return body.data
+      .filter((item: { message?: { direction?: string } }) => item.message?.direction === 'inbound')
+      .map((item: { message: { from?: string; id?: string; type?: string; text?: { body?: string } } }) => ({
+        from: item.message.from || '',
+        id: item.message.id || '',
+        type: item.message.type || '',
+        text: item.message.type === 'text' ? item.message.text?.body || '' : '',
+      }));
+  }
+
+  // --- Kapso v2 single format ---
+  if (body.data?.message) {
+    const msg = body.data.message;
+    if (msg.direction && msg.direction !== 'inbound') return [];
+    return [{
+      from: msg.from || '',
+      id: msg.id || '',
+      type: msg.type || '',
+      text: msg.type === 'text' ? msg.text?.body || '' : '',
+    }];
+  }
+
+  // --- Kapso v2 top-level message (alternative shape) ---
+  if (body.message && body.message.from) {
+    const msg = body.message;
+    if (msg.direction && msg.direction !== 'inbound') return [];
+    return [{
+      from: msg.from || '',
+      id: msg.id || '',
+      type: msg.type || '',
+      text: msg.type === 'text' ? msg.text?.body || '' : '',
+    }];
+  }
+
+  return [];
+}
 
 // Webhook verification (GET)
 export async function GET(request: NextRequest) {
@@ -35,32 +109,25 @@ export async function GET(request: NextRequest) {
 // Webhook message handler (POST)
 export async function POST(request: NextRequest) {
   try {
-    const body: WhatsAppWebhookBody = await request.json();
+    const body = await request.json();
 
-    console.log('[webhook] POST received, object:', body.object);
+    console.log('[webhook] POST received, keys:', Object.keys(body).join(','));
 
-    if (body.object !== 'whatsapp_business_account') {
+    const messages = extractMessages(body);
+
+    if (messages.length === 0) {
+      console.log('[webhook] No inbound messages found in payload');
       return NextResponse.json({ status: 'ok' });
     }
 
-    for (const entry of body.entry) {
-      for (const change of entry.changes) {
-        const messages = change.value.messages;
-        if (!messages) {
-          console.log('[webhook] No messages in change (status update or other event)');
-          continue;
-        }
-
-        for (const message of messages) {
-          console.log('[webhook] Message received:', { type: message.type, from: message.from, id: message.id });
-          if (message.type !== 'text') continue;
-          try {
-            await handleTextMessage(message.from, message.text.body, message.id);
-            console.log('[webhook] Message handled successfully for', message.from);
-          } catch (msgError) {
-            console.error('[webhook] Error handling message:', msgError);
-          }
-        }
+    for (const message of messages) {
+      console.log('[webhook] Message received:', { type: message.type, from: message.from, id: message.id });
+      if (message.type !== 'text') continue;
+      try {
+        await handleTextMessage(message.from, message.text, message.id);
+        console.log('[webhook] Message handled successfully for', message.from);
+      } catch (msgError) {
+        console.error('[webhook] Error handling message:', msgError);
       }
     }
 

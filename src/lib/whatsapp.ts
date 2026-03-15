@@ -17,7 +17,7 @@ const useKapso = !!KAPSO_API_KEY;
 
 function getBaseUrl(): string {
   if (useKapso) {
-    return `https://api.kapso.ai/meta/whatsapp/${META_PHONE_NUMBER_ID}`;
+    return `https://api.kapso.ai/meta/whatsapp/v24.0/${META_PHONE_NUMBER_ID}`;
   }
   return `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}`;
 }
