@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     console.log('[webhook] POST received, keys:', Object.keys(body).join(','));
+    console.log('[webhook] PAYLOAD:', JSON.stringify(body).substring(0, 2000));
 
     const messages = extractMessages(body);
 
