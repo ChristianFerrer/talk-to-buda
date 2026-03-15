@@ -29,7 +29,8 @@ export const metadata: Metadata = {
     description: "Conversa por WhatsApp con una IA inspirada en la sabiduría de Buda.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/lotus1.png",
+    apple: "/lotus1.png",
   },
 };
 
