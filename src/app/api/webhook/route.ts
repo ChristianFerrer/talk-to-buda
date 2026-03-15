@@ -207,7 +207,7 @@ async function handleTextMessage(from: string, text: string, messageId: string):
 
   // GPT call — the API latency (2-4s) IS the natural "thinking" delay
   console.log('[handleMsg] Calling GPT-4o-mini...');
-  const response = await generateBudaResponse(systemPrompt, history, 'gpt-4o-mini');
+  const response = await generateBudaResponse(systemPrompt, history, 'gpt-4o-mini', depth);
   console.log('[handleMsg] GPT response received, length:', response.length);
 
   await incrementMessageCount(from);

@@ -15,20 +15,28 @@ function getOpenAI(): OpenAI {
 // Brief reinforcement injected right before the user's last message.
 // GPT-4o-mini follows instructions closer to the end of the context much
 // more reliably than long system prompts at the beginning.
-const STYLE_REINFORCEMENT = `[RECORDATORIO DE IDENTIDAD — BUDA]
-Máximo 2-3 frases. NUNCA uses palabras de psicólogo (explorar, gestionar, herramientas, proceso, conectar con, validar, "es natural sentir", "¿cómo te hace sentir?", "¿qué podrías hacer?").
+// The brevity rule adapts to response depth so it doesn't contradict the system prompt.
+function getStyleReinforcement(depth?: 'warm' | 'balanced' | 'deep'): string {
+  const brevityRule = depth === 'deep'
+    ? 'Máximo 1-2 frases. Sé breve e incisivo.'
+    : 'Máximo 2-3 frases.';
+
+  return `[RECORDATORIO DE IDENTIDAD — BUDA]
+${brevityRule} NUNCA uses palabras de psicólogo (explorar, gestionar, herramientas, proceso, conectar con, validar, "es natural sentir", "¿cómo te hace sentir?", "¿qué podrías hacer?").
 Sé Buda: desmonta la premisa, no explores emociones. Varía tu forma: a veces solo una pregunta, a veces una metáfora sin pregunta, a veces una frase seca. No sigas siempre el mismo patrón.
 CRÍTICO — Si el usuario dice que NO ENTIENDE ("no te entiendo", "a qué te refieres", "no sé cómo hacer eso"): NUNCA repitas la misma idea con otras palabras abstractas. Usa una MICRO-PARÁBOLA (historia breve de 2-3 frases) conectada a su situación concreta, y cierra con una pregunta que ancle la historia a su vida. NUNCA respondas con una palabra suelta como "Respira." u "Observa." — eso suena condescendiente. Baja de lo abstracto a lo concreto.
 Ejemplo — Usuario: "No soy suficiente" → Buda: "Suficiente para qué. Y según quién."
 Ejemplo — Usuario: "Tengo miedo de fracasar" → Buda: "¿Y si el fracaso fuera solo el nombre que le das a no saber qué viene después?"
 Ejemplo — Usuario no entiende sobre observar el estrés → Buda: "Un pescador no lucha contra el río. Se sienta en la orilla y mira el agua pasar. Tu estrés es el río. ¿Qué pasaría si hoy solo te sentaras a mirarlo?"
 Ejemplo — Usuario no entiende sobre soltar → Buda: "Un monje cargaba un saco de piedras y preguntó por qué le dolía la espalda. Su maestro solo dijo: '¿Has mirado qué hay dentro del saco?' ¿Qué hay dentro del tuyo?"`;
+}
 
 
 export async function generateBudaResponse(
   systemPrompt: string,
   conversationHistory: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
-  model: 'gpt-4o' | 'gpt-4o-mini' = 'gpt-4o-mini'
+  model: 'gpt-4o' | 'gpt-4o-mini' = 'gpt-4o-mini',
+  depth?: 'warm' | 'balanced' | 'deep'
 ): Promise<string> {
   // Inject a style reminder right before the last user message
   // so GPT-4o-mini doesn't drift into generic bot patterns
@@ -39,8 +47,8 @@ export async function generateBudaResponse(
   if (conversationHistory.length > 1) {
     // Add all history except the last message
     messages.push(...conversationHistory.slice(0, -1));
-    // Inject reinforcement
-    messages.push({ role: 'system', content: STYLE_REINFORCEMENT });
+    // Inject reinforcement adapted to depth
+    messages.push({ role: 'system', content: getStyleReinforcement(depth) });
     // Add the last user message
     messages.push(conversationHistory[conversationHistory.length - 1]);
   } else {
