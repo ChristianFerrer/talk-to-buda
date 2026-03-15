@@ -62,7 +62,7 @@ export default function Home() {
               href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-sage-600 hover:bg-sage-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1da851] text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
             >
               <WhatsAppIcon className="w-4 h-4" />
               <span className="hidden sm:inline">Abrir WhatsApp</span>
@@ -97,7 +97,7 @@ export default function Home() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-sage-600 hover:bg-sage-700 text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1da851] text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <WhatsAppIcon className="w-6 h-6" />
             Hablar con Buda en WhatsApp
@@ -178,7 +178,7 @@ export default function Home() {
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-sage-600 hover:bg-sage-700 text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1da851] text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <WhatsAppIcon className="w-5 h-5" />
                 Pruébalo ahora
@@ -283,7 +283,7 @@ export default function Home() {
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-sage-600 hover:bg-sage-700 text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1da851] text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <WhatsAppIcon className="w-5 h-5" />
                 Hablar con Buda
