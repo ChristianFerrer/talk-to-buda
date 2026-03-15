@@ -60,7 +60,7 @@ export function getSplitDelay(): number {
 
 const PAUSE_MESSAGES = [
   'No todo necesita respuesta inmediata.',
-  'Siéntate con eso un momento.',
+  'A veces el silencio dice más que cualquier palabra.',
   'La prisa es la primera ilusión.',
 ];
 

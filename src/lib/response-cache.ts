@@ -9,24 +9,15 @@
 
 const GREETING_RESPONSES = [
   'Hola.',
-  'Bienvenido.',
   'Estoy aquí.',
   'Hola. Estoy aquí.',
-  'Bienvenido de nuevo.',
   'Aquí estoy.',
   'Adelante.',
-  'Te escucho.',
   'Pasa.',
   'Llegaste.',
-  'Hola. Siéntate.',
-  'Bienvenido. Estoy presente.',
-  'El camino te trajo de vuelta.',
   'Aquí. Como siempre.',
-  'Aquí estaré.',
   'Hola. La puerta estaba abierta.',
-  'Siéntate.',
   'De nuevo aquí. Bien.',
-  'Hola. Tómate un momento.',
   'Bienvenido. Sin prisa.',
 ];
 
