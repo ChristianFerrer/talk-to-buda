@@ -53,7 +53,7 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-warm-50/80 backdrop-blur-md border-b border-warm-200/50">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 text-gray-800">
-            <span className="text-xl">☸</span>
+            <img src="/lotus1.png" alt="Lotus" className="w-6 h-6" />
             <span className="text-sm font-medium tracking-wide">Habla con Buda</span>
           </a>
           <nav className="flex items-center gap-6">
@@ -75,7 +75,7 @@ export default function Home() {
       {/* Hero */}
       <section className="min-h-[92vh] flex flex-col items-center justify-center px-6 text-center pt-14">
         <FadeIn>
-          <div className="text-6xl mb-8 opacity-80">🪷</div>
+          <img src="/lotus.png" alt="Lotus" className="w-24 h-24 mb-8 opacity-80 mx-auto" />
         </FadeIn>
         <FadeIn delay={100}>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-light tracking-tight text-gray-900 mb-6">
@@ -299,7 +299,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-8 mb-10">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">☸</span>
+                <img src="/lotus1.png" alt="Lotus" className="w-5 h-5" />
                 <span className="text-sm font-medium text-gray-700">Habla con Buda</span>
               </div>
               <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
@@ -342,8 +342,8 @@ function ChatBubble({ question, answer }: { question: string; answer: string }) 
       </div>
       {/* Buda response — left */}
       <div className="flex justify-start gap-2">
-        <div className="w-8 h-8 rounded-full bg-warm-200 flex items-center justify-center text-sm flex-shrink-0 mt-1">
-          ☸
+        <div className="w-8 h-8 rounded-full bg-warm-200 flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+          <img src="/lotus1.png" alt="Buda" className="w-5 h-5" />
         </div>
         <div className="bg-white rounded-2xl rounded-tl-md px-4 py-3 max-w-[80%] shadow-sm">
           <p className="text-sm text-gray-600 italic leading-relaxed">{answer}</p>
