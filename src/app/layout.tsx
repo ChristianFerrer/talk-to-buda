@@ -21,6 +21,15 @@ export const metadata: Metadata = {
     title: "Habla con Buda",
     description: "Un espacio simple para conversar y encontrar claridad a través de la sabiduría de Buda.",
     type: "website",
+    siteName: "Habla con Buda",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Habla con Buda",
+    description: "Conversa por WhatsApp con una IA inspirada en la sabiduría de Buda.",
+  },
+  icons: {
+    icon: "/favicon.ico",
   },
 };
 

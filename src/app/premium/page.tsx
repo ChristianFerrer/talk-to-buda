@@ -9,7 +9,7 @@ function PremiumContent() {
   const token = searchParams.get('token');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [plan, setPlan] = useState<'monthly' | 'weekly'>('monthly');
+  const [plan, setPlan] = useState<'monthly' | 'weekly'>('weekly');
 
   const handleCheckout = async () => {
     if (!token) {
