@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { generateSummary } from './openai';
 
-const RECENT_MESSAGES_COUNT = 15;
+const RECENT_MESSAGES_COUNT = 8;
 const SUMMARY_TRIGGER_COUNT = 20;
 
 export async function getConversationContext(

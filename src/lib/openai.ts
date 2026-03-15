@@ -12,19 +12,38 @@ function getOpenAI(): OpenAI {
   return _openai;
 }
 
+// Brief reinforcement injected right before the user's last message.
+// GPT-4o-mini follows instructions closer to the end of the context much
+// more reliably than long system prompts at the beginning.
+const STYLE_REINFORCEMENT = `[ESTILO] Máximo 2-3 frases. No consueles. No uses metáforas genéricas. Sé socrático: pregunta, no expliques.`;
+
 export async function generateBudaResponse(
   systemPrompt: string,
   conversationHistory: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
   model: 'gpt-4o' | 'gpt-4o-mini' = 'gpt-4o-mini'
 ): Promise<string> {
+  // Inject a style reminder right before the last user message
+  // so GPT-4o-mini doesn't drift into generic bot patterns
+  const messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [
+    { role: 'system', content: systemPrompt },
+  ];
+
+  if (conversationHistory.length > 1) {
+    // Add all history except the last message
+    messages.push(...conversationHistory.slice(0, -1));
+    // Inject reinforcement
+    messages.push({ role: 'system', content: STYLE_REINFORCEMENT });
+    // Add the last user message
+    messages.push(conversationHistory[conversationHistory.length - 1]);
+  } else {
+    messages.push(...conversationHistory);
+  }
+
   const response = await getOpenAI().chat.completions.create({
     model,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      ...conversationHistory,
-    ],
+    messages,
     max_tokens: 150,
-    temperature: 0.8,
+    temperature: 0.7,
   });
 
   return response.choices[0]?.message?.content || '';
