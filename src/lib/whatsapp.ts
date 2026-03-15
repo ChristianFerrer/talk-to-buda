@@ -1,22 +1,60 @@
+/**
+ * WhatsApp messaging client.
+ * Supports two providers:
+ *   - Meta Cloud API directly (default)
+ *   - Kapso proxy (set KAPSO_API_KEY to enable)
+ *
+ * When using Kapso, messages route through their proxy which provides
+ * phone number provisioning, parsed webhooks, and built-in inbox.
+ * The API format is identical — Kapso proxies to Meta Cloud API.
+ */
+
+const KAPSO_API_KEY = process.env.KAPSO_API_KEY || '';
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || '';
 const META_PHONE_NUMBER_ID = process.env.META_PHONE_NUMBER_ID || '';
 
-export async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
-  console.log('[whatsapp] Sending message to:', to, 'length:', text.length);
+const useKapso = !!KAPSO_API_KEY;
 
-  if (!META_ACCESS_TOKEN || !META_PHONE_NUMBER_ID) {
-    console.error('[whatsapp] MISSING ENV VARS: META_ACCESS_TOKEN=', !!META_ACCESS_TOKEN, 'META_PHONE_NUMBER_ID=', !!META_PHONE_NUMBER_ID);
-    throw new Error('WhatsApp API not configured: missing META_ACCESS_TOKEN or META_PHONE_NUMBER_ID');
+function getBaseUrl(): string {
+  if (useKapso) {
+    return `https://api.kapso.ai/meta/whatsapp/${META_PHONE_NUMBER_ID}`;
+  }
+  return `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}`;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  if (useKapso) {
+    return {
+      'X-API-Key': KAPSO_API_KEY,
+      'Content-Type': 'application/json',
+    };
+  }
+  return {
+    'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+export async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
+  console.log('[whatsapp] Sending message to:', to, 'length:', text.length, 'provider:', useKapso ? 'kapso' : 'meta');
+
+  if (useKapso) {
+    if (!KAPSO_API_KEY || !META_PHONE_NUMBER_ID) {
+      console.error('[whatsapp] MISSING ENV VARS: KAPSO_API_KEY=', !!KAPSO_API_KEY, 'META_PHONE_NUMBER_ID=', !!META_PHONE_NUMBER_ID);
+      throw new Error('WhatsApp API not configured: missing KAPSO_API_KEY or META_PHONE_NUMBER_ID');
+    }
+  } else {
+    if (!META_ACCESS_TOKEN || !META_PHONE_NUMBER_ID) {
+      console.error('[whatsapp] MISSING ENV VARS: META_ACCESS_TOKEN=', !!META_ACCESS_TOKEN, 'META_PHONE_NUMBER_ID=', !!META_PHONE_NUMBER_ID);
+      throw new Error('WhatsApp API not configured: missing META_ACCESS_TOKEN or META_PHONE_NUMBER_ID');
+    }
   }
 
-  const url = `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}/messages`;
+  const url = `${getBaseUrl()}/messages`;
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       messaging_product: 'whatsapp',
       recipient_type: 'individual',
@@ -34,14 +72,11 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
 }
 
 export async function markMessageAsRead(messageId: string): Promise<void> {
-  const url = `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}/messages`;
+  const url = `${getBaseUrl()}/messages`;
 
   await fetch(url, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       messaging_product: 'whatsapp',
       status: 'read',
@@ -56,14 +91,11 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
  * Requires the incoming message ID to work.
  */
 export async function showTypingIndicator(messageId: string): Promise<void> {
-  const url = `https://graph.facebook.com/v22.0/${META_PHONE_NUMBER_ID}/messages`;
+  const url = `${getBaseUrl()}/messages`;
 
   await fetch(url, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${META_ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       messaging_product: 'whatsapp',
       status: 'read',
