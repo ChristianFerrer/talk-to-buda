@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import type { DashboardMetrics } from '@/types';
+import type { DashboardMetrics, MetricDetail } from '@/types';
 
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || '';
 
@@ -60,6 +60,13 @@ export async function POST(request: NextRequest) {
       retentionD1Result,
       retentionD7Result,
       topicsResult,
+      // Detail queries
+      topUsersResult,
+      newUsersTodayListResult,
+      activeUsersTodayListResult,
+      messagesTodayTimestampsResult,
+      conversationsTodayDetailResult,
+      premiumUsersListResult,
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('users').select('*', { count: 'exact', head: true }).gte('first_seen', `${today}T00:00:00`),
@@ -73,6 +80,18 @@ export async function POST(request: NextRequest) {
       supabase.rpc('get_retention_d1'),
       supabase.rpc('get_retention_d7'),
       supabase.from('messages').select('user_message').gte('timestamp', thirtyDaysAgo.toISOString()).limit(1000),
+      // Detail: top 10 users by message count
+      supabase.from('users').select('user_phone, total_messages, last_seen, is_premium, is_vip').order('total_messages', { ascending: false }).limit(10),
+      // Detail: new users today
+      supabase.from('users').select('user_phone, first_seen').gte('first_seen', `${today}T00:00:00`).order('first_seen', { ascending: false }).limit(20),
+      // Detail: active users today
+      supabase.from('users').select('user_phone, message_count_today, last_seen, is_premium, is_vip').eq('last_message_date', today).order('message_count_today', { ascending: false }).limit(20),
+      // Detail: messages today with timestamps (for hourly breakdown)
+      supabase.from('messages').select('timestamp').gte('timestamp', `${today}T00:00:00`),
+      // Detail: conversations today with details
+      supabase.from('messages').select('conversation_id, user_phone, timestamp').gte('timestamp', `${today}T00:00:00`),
+      // Detail: premium users list
+      supabase.from('premium_users').select('user_phone, status, started_at').order('started_at', { ascending: false }).limit(20),
     ]);
 
     // Calculate unique conversations today
@@ -129,6 +148,97 @@ export async function POST(request: NextRequest) {
       .slice(0, 15)
       .map(([word, count]) => ({ word, count }));
 
+    // Build detail tables
+    const details: Record<string, MetricDetail> = {};
+
+    // Total users → top 10 by messages
+    details['totalUsers'] = {
+      headers: ['Teléfono', 'Mensajes', 'Última vez', 'Tipo'],
+      rows: (topUsersResult.data || []).map((u: { user_phone: string; total_messages: number; last_seen: string; is_premium: boolean; is_vip: boolean }) => [
+        u.user_phone,
+        String(u.total_messages),
+        new Date(u.last_seen).toLocaleDateString('es-ES'),
+        u.is_vip ? 'VIP' : u.is_premium ? 'Premium' : 'Free',
+      ]),
+    };
+
+    // New users today
+    details['newUsersToday'] = {
+      headers: ['Teléfono', 'Hora registro'],
+      rows: (newUsersTodayListResult.data || []).map((u: { user_phone: string; first_seen: string }) => [
+        u.user_phone,
+        new Date(u.first_seen).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      ]),
+    };
+
+    // Active users today
+    details['activeUsersToday'] = {
+      headers: ['Teléfono', 'Msgs hoy', 'Última vez', 'Tipo'],
+      rows: (activeUsersTodayListResult.data || []).map((u: { user_phone: string; message_count_today: number; last_seen: string; is_premium: boolean; is_vip: boolean }) => [
+        u.user_phone,
+        String(u.message_count_today),
+        new Date(u.last_seen).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        u.is_vip ? 'VIP' : u.is_premium ? 'Premium' : 'Free',
+      ]),
+    };
+
+    // Messages today → hourly breakdown
+    const hourlyMap = new Map<number, number>();
+    for (let h = 0; h < 24; h++) hourlyMap.set(h, 0);
+    if (messagesTodayTimestampsResult.data) {
+      for (const m of messagesTodayTimestampsResult.data) {
+        const hour = new Date(m.timestamp).getHours();
+        hourlyMap.set(hour, (hourlyMap.get(hour) || 0) + 1);
+      }
+    }
+    details['messagesToday'] = {
+      headers: ['Hora', 'Mensajes'],
+      rows: Array.from(hourlyMap.entries())
+        .filter(([, count]) => count > 0)
+        .map(([hour, count]) => [
+          `${String(hour).padStart(2, '0')}:00`,
+          String(count),
+        ]),
+    };
+
+    // Conversations today → grouped by conversation
+    const convDetailMap = new Map<string, { phone: string; count: number; firstMsg: string }>();
+    if (conversationsTodayDetailResult.data) {
+      for (const m of conversationsTodayDetailResult.data) {
+        const existing = convDetailMap.get(m.conversation_id);
+        if (existing) {
+          existing.count++;
+        } else {
+          convDetailMap.set(m.conversation_id, {
+            phone: m.user_phone,
+            count: 1,
+            firstMsg: m.timestamp,
+          });
+        }
+      }
+    }
+    details['conversationsToday'] = {
+      headers: ['Usuario', 'Mensajes', 'Inicio'],
+      rows: Array.from(convDetailMap.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 15)
+        .map((c) => [
+          c.phone,
+          String(c.count),
+          new Date(c.firstMsg).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        ]),
+    };
+
+    // Premium users list
+    details['premiumUsers'] = {
+      headers: ['Teléfono', 'Estado', 'Desde'],
+      rows: (premiumUsersListResult.data || []).map((u: { user_phone: string; status: string; started_at: string }) => [
+        u.user_phone,
+        u.status,
+        new Date(u.started_at).toLocaleDateString('es-ES'),
+      ]),
+    };
+
     const metrics: DashboardMetrics = {
       overview: {
         totalUsers,
@@ -151,6 +261,7 @@ export async function POST(request: NextRequest) {
         premiumUsers: premiumUsersResult.count || 0,
         conversionRate: totalUsers > 0 ? Math.round(((premiumUsersResult.count || 0) / totalUsers) * 1000) / 10 : 0,
       },
+      details,
     };
 
     return NextResponse.json(metrics);

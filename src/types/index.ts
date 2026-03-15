@@ -81,6 +81,11 @@ export interface WhatsAppWebhookBody {
   }>;
 }
 
+export interface MetricDetail {
+  headers: string[];
+  rows: Array<string[]>;
+}
+
 export interface DashboardMetrics {
   overview: {
     totalUsers: number;
@@ -109,4 +114,5 @@ export interface DashboardMetrics {
     premiumUsers: number;
     conversionRate: number;
   };
+  details: Record<string, MetricDetail>;
 }

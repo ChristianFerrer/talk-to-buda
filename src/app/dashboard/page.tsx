@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { DashboardMetrics } from '@/types';
+import type { DashboardMetrics, MetricDetail } from '@/types';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -195,11 +195,11 @@ export default function Dashboard() {
       <section className="mb-10">
         <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Overview</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <MetricCard label="Total usuarios" value={metrics.overview.totalUsers} />
-          <MetricCard label="Nuevos hoy" value={metrics.overview.newUsersToday} />
-          <MetricCard label="Activos hoy" value={metrics.overview.activeUsersToday} />
-          <MetricCard label="Mensajes hoy" value={metrics.overview.totalMessagesToday} />
-          <MetricCard label="Conversaciones hoy" value={metrics.overview.totalConversationsToday} />
+          <MetricCard label="Total usuarios" value={metrics.overview.totalUsers} detail={metrics.details.totalUsers} />
+          <MetricCard label="Nuevos hoy" value={metrics.overview.newUsersToday} detail={metrics.details.newUsersToday} />
+          <MetricCard label="Activos hoy" value={metrics.overview.activeUsersToday} detail={metrics.details.activeUsersToday} />
+          <MetricCard label="Mensajes hoy" value={metrics.overview.totalMessagesToday} detail={metrics.details.messagesToday} />
+          <MetricCard label="Conversaciones hoy" value={metrics.overview.totalConversationsToday} detail={metrics.details.conversationsToday} />
         </div>
       </section>
 
@@ -222,7 +222,7 @@ export default function Dashboard() {
         <div>
           <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Premium</h2>
           <div className="space-y-4">
-            <MetricCard label="Usuarios premium" value={metrics.premium.premiumUsers} />
+            <MetricCard label="Usuarios premium" value={metrics.premium.premiumUsers} detail={metrics.details.premiumUsers} />
             <MetricCard label="Conversión" value={`${metrics.premium.conversionRate}%`} />
           </div>
         </div>
@@ -308,11 +308,49 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string | number }) {
+function MetricCard({ label, value, detail }: { label: string; value: string | number; detail?: MetricDetail }) {
+  const [open, setOpen] = useState(false);
+  const hasDetail = detail && detail.rows.length > 0;
+
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm">
-      <p className="text-xs text-gray-400 mb-1">{label}</p>
-      <p className="text-2xl font-light text-gray-900">{value}</p>
+    <div
+      className={`bg-white rounded-2xl p-5 shadow-sm transition-all ${hasDetail ? 'cursor-pointer hover:shadow-md' : ''} ${open ? 'col-span-full' : ''}`}
+      onClick={() => hasDetail && setOpen(!open)}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs text-gray-400 mb-1">{label}</p>
+          <p className="text-2xl font-light text-gray-900">{value}</p>
+        </div>
+        {hasDetail && (
+          <span className={`text-gray-300 text-xs mt-1 transition-transform ${open ? 'rotate-180' : ''}`}>
+            ▼
+          </span>
+        )}
+      </div>
+
+      {open && detail && detail.rows.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-gray-100 overflow-x-auto" onClick={(e) => e.stopPropagation()}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr>
+                {detail.headers.map((h) => (
+                  <th key={h} className="text-left text-xs text-gray-400 font-medium pb-2 pr-4">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {detail.rows.map((row, i) => (
+                <tr key={i} className="border-t border-gray-50">
+                  {row.map((cell, j) => (
+                    <td key={j} className="py-1.5 pr-4 text-gray-600 font-mono text-xs">{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
