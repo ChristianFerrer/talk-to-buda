@@ -15,7 +15,7 @@ function getOpenAI(): OpenAI {
 // Brief reinforcement injected right before the user's last message.
 // GPT-4o-mini follows instructions closer to the end of the context much
 // more reliably than long system prompts at the beginning.
-const STYLE_REINFORCEMENT = `[ESTILO] Máximo 2-3 frases. No consueles. No uses metáforas genéricas. Sé socrático: pregunta, no expliques.`;
+const STYLE_REINFORCEMENT = `[ESTILO] Máximo 2-3 frases. No consueles. No seas psicólogo: no explores sentimientos ni sugieras soluciones disfrazadas de preguntas. Sé Buda: desmonta la premisa del sufrimiento con una pregunta o metáfora que cambie la perspectiva.`;
 
 export async function generateBudaResponse(
   systemPrompt: string,
