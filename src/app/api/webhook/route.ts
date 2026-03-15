@@ -25,9 +25,43 @@ interface IncomingMessage {
 }
 
 /**
+ * Extract the sender phone from a Kapso message object.
+ * Kapso stores it in message.kapso.phone_number or message.from or conversation.phone_number.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getKapsoSender(msg: any, event?: any): string {
+  return msg.kapso?.phone_number || msg.from || event?.conversation?.phone_number || '';
+}
+
+/**
+ * Check if a Kapso message is inbound (from user, not from us).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isKapsoInbound(msg: any): boolean {
+  const direction = msg.kapso?.direction || msg.direction;
+  if (direction && direction !== 'inbound') return false;
+  return true;
+}
+
+/**
+ * Convert a Kapso message object to our normalized format.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function kapsoMessageToIncoming(msg: any, event?: any): IncomingMessage | null {
+  if (!isKapsoInbound(msg)) return null;
+  return {
+    from: getKapsoSender(msg, event),
+    id: msg.id || '',
+    type: msg.type || '',
+    text: msg.type === 'text' ? msg.text?.body || '' : '',
+  };
+}
+
+/**
  * Extract messages from either Meta or Kapso webhook payloads.
  * - Meta format: { object: 'whatsapp_business_account', entry: [...] }
- * - Kapso v2 format: { data: { message: {...} } } or batched { batch: true, data: [...] }
+ * - Kapso v2 batch: { batch: true, data: [{ message, conversation, ... }], batch_info }
+ * - Kapso v2 single: { type: '...', message: {...}, conversation: {...} }
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractMessages(body: any): IncomingMessage[] {
@@ -52,39 +86,23 @@ function extractMessages(body: any): IncomingMessage[] {
   }
 
   // --- Kapso v2 batched format ---
+  // { batch: true, data: [{ message: {...}, conversation: {...} }, ...], batch_info: { size: N } }
   if (body.batch === true && Array.isArray(body.data)) {
-    return body.data
-      .filter((item: { message?: { direction?: string } }) => item.message?.direction === 'inbound')
-      .map((item: { message: { from?: string; id?: string; type?: string; text?: { body?: string } } }) => ({
-        from: item.message.from || '',
-        id: item.message.id || '',
-        type: item.message.type || '',
-        text: item.message.type === 'text' ? item.message.text?.body || '' : '',
-      }));
+    const results: IncomingMessage[] = [];
+    for (const event of body.data) {
+      const msg = event.message;
+      if (!msg) continue;
+      const incoming = kapsoMessageToIncoming(msg, event);
+      if (incoming) results.push(incoming);
+    }
+    return results;
   }
 
   // --- Kapso v2 single format ---
-  if (body.data?.message) {
-    const msg = body.data.message;
-    if (msg.direction && msg.direction !== 'inbound') return [];
-    return [{
-      from: msg.from || '',
-      id: msg.id || '',
-      type: msg.type || '',
-      text: msg.type === 'text' ? msg.text?.body || '' : '',
-    }];
-  }
-
-  // --- Kapso v2 top-level message (alternative shape) ---
-  if (body.message && body.message.from) {
-    const msg = body.message;
-    if (msg.direction && msg.direction !== 'inbound') return [];
-    return [{
-      from: msg.from || '',
-      id: msg.id || '',
-      type: msg.type || '',
-      text: msg.type === 'text' ? msg.text?.body || '' : '',
-    }];
+  // { type: 'whatsapp.message.received', message: {...}, conversation: {...} }
+  if (body.message && body.type) {
+    const incoming = kapsoMessageToIncoming(body.message, body);
+    return incoming ? [incoming] : [];
   }
 
   return [];
