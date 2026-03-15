@@ -50,7 +50,7 @@ export async function generateBudaResponse(
   const response = await getOpenAI().chat.completions.create({
     model,
     messages,
-    max_tokens: 150,
+    max_tokens: 200,
     temperature: 0.7,
   });
 

@@ -30,10 +30,10 @@ export function delay(ms: number): Promise<void> {
 // --- Split responses ---
 
 const PRELUDE_MESSAGES = [
-  'Observa.',
+  'Hmm.',
   'Un momento.',
-  'Escucha.',
-  'Respira.',
+  'Déjame pensar.',
+  'Mmm…',
 ];
 
 /**
@@ -59,8 +59,7 @@ export function getSplitDelay(): number {
 // --- Reflective pauses ---
 
 const PAUSE_MESSAGES = [
-  'Silencio.',
-  'No todo necesita respuesta. Observa.',
+  'No todo necesita respuesta inmediata.',
   'Siéntate con eso un momento.',
   'La prisa es la primera ilusión.',
 ];
