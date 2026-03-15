@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { sendWhatsAppMessage, markMessageAsRead, showTypingIndicator } from '@/lib/whatsapp';
+import { sendWhatsAppMessage, showTypingIndicator } from '@/lib/whatsapp';
 import { generateBudaResponse } from '@/lib/openai';
 import { getBuddhaSystemPrompt, WELCOME_MESSAGE, getLimitReachedMessage, getPremiumLimitMessage, getCancelConfirmationMessage, getCancelledMessage, getDeleteDataConfirmationMessage, getDataDeletedMessage, CRISIS_MESSAGE } from '@/lib/prompts/buddha-system';
 import { ORACLE_SYSTEM_PROMPT } from '@/lib/prompts/oracle';
