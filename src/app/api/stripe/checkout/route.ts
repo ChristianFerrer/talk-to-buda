@@ -8,13 +8,13 @@ const STRIPE_WEEKLY_PRICE_ID = process.env.STRIPE_WEEKLY_PRICE_ID || '';
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, plan } = await request.json();
+    const { token, plan, phone } = await request.json();
 
     let userPhone: string | null = null;
     let tokenId: string | null = null;
 
-    // If token provided, validate it and get user phone
     if (token) {
+      // Flow with token: validate and get user phone
       const { data: tokenData } = await supabase
         .from('premium_tokens')
         .select('*')
@@ -32,13 +32,21 @@ export async function POST(request: NextRequest) {
 
       userPhone = tokenData.user_phone;
       tokenId = tokenData.id;
+    } else if (phone) {
+      // Flow without token: phone provided directly from web form
+      const cleanedPhone = (phone as string).replace(/[^0-9]/g, '');
+      if (cleanedPhone.length < 8) {
+        return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 });
+      }
+      userPhone = cleanedPhone;
+    } else {
+      return NextResponse.json({ error: 'Token or phone is required' }, { status: 400 });
     }
 
     // Create Stripe Checkout session with 3-day free trial
     const priceId = plan === 'weekly' ? STRIPE_WEEKLY_PRICE_ID : STRIPE_PRICE_ID;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sessionParams: any = {
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [
@@ -50,25 +58,13 @@ export async function POST(request: NextRequest) {
       subscription_data: {
         trial_period_days: 3,
       },
+      metadata: {
+        user_phone: userPhone,
+        ...(tokenId ? { token_id: tokenId } : { source: 'web_direct' }),
+      },
       success_url: `${APP_URL}/premium/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${APP_URL}/premium/cancel`,
-    };
-
-    if (userPhone) {
-      // Flow with token: we already know the user's phone
-      sessionParams.metadata = {
-        user_phone: userPhone,
-        token_id: tokenId,
-      };
-    } else {
-      // Flow without token: collect phone number via Stripe
-      sessionParams.phone_number_collection = { enabled: true };
-      sessionParams.metadata = {
-        source: 'web_direct',
-      };
-    }
-
-    const session = await getStripe().checkout.sessions.create(sessionParams);
+    });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {

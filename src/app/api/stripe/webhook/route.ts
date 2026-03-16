@@ -45,24 +45,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function normalizePhone(phone: string): string {
-  // Strip all non-digit characters and ensure it starts with country code
-  const digits = phone.replace(/[^0-9]/g, '');
-  // If it starts with '+' the replace already removed it, digits are clean
-  return digits;
-}
-
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  let userPhone = session.metadata?.user_phone;
+  const userPhone = session.metadata?.user_phone;
   const tokenId = session.metadata?.token_id;
 
-  // If no phone from token, get it from Stripe's phone collection
-  if (!userPhone && session.customer_details?.phone) {
-    userPhone = normalizePhone(session.customer_details.phone);
-  }
-
   if (!userPhone) {
-    console.error('No user_phone in session metadata or customer details');
+    console.error('No user_phone in session metadata');
     return;
   }
 

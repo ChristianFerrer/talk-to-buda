@@ -11,16 +11,34 @@ function PremiumContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [plan, setPlan] = useState<'monthly' | 'weekly'>('weekly');
+  const [phone, setPhone] = useState('');
+
+  const needsPhone = !token;
 
   const handleCheckout = async () => {
+    if (needsPhone) {
+      const cleaned = phone.replace(/[^0-9+]/g, '');
+      if (cleaned.length < 8) {
+        setError('Introduce tu número de WhatsApp con código de país (ej: +34612345678)');
+        return;
+      }
+    }
+
     setLoading(true);
     setError('');
 
     try {
+      const body: Record<string, string | null> = { plan };
+      if (token) {
+        body.token = token;
+      } else {
+        body.phone = phone.replace(/[^0-9+]/g, '');
+      }
+
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, plan }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -109,6 +127,24 @@ function PremiumContent() {
             <span>Cancela cuando quieras</span>
           </div>
         </div>
+
+        {/* Phone input for web-direct users */}
+        {needsPhone && (
+          <div className="mb-6 max-w-sm mx-auto">
+            <label htmlFor="phone" className="block text-sm text-gray-500 font-light mb-2">
+              Tu número de WhatsApp
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+34 612 345 678"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 text-center text-lg font-light focus:outline-none focus:border-sage-500 focus:ring-1 focus:ring-sage-500 transition-colors"
+            />
+            <p className="text-xs text-gray-400 mt-1.5">Con código de país. Aquí recibirás tu acceso Premium.</p>
+          </div>
+        )}
 
         {/* CTA */}
         <button
