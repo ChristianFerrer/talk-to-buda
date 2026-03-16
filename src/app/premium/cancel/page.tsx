@@ -14,7 +14,7 @@ export default function PremiumCancel() {
           No pasa nada. Si deseas, puedes volver a intentarlo cuando estés listo.
         </p>
         <p className="text-sm text-gray-400 mb-10">
-          Mientras tanto, puedes seguir hablando con Buda gratis (3 mensajes al día).
+          Mientras tanto, puedes seguir hablando con Buda gratis (7 mensajes al día).
         </p>
 
         <a

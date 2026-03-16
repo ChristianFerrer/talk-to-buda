@@ -171,7 +171,7 @@ Si algo pesa en tu mente, estoy aquí.`;
 export function getLimitReachedMessage(premiumLink: string): string {
   return `El río no fluye sin pausa, y tu mente también merece descanso.
 
-Hemos compartido tres reflexiones hoy. Si deseas continuar este camino sin límites, puedes probar Premium gratis durante 3 días:
+Hemos compartido siete reflexiones hoy. Si deseas continuar este camino sin límites, puedes probar Premium gratis durante 3 días:
 
 ${premiumLink}
 

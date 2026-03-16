@@ -38,7 +38,7 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 
 | Aspecto | Decisión |
 |---|---|
-| **Free** | 3 mensajes/día |
+| **Free** | 7 mensajes/día |
 | **Premium semanal** | 1,99€/semana, 50 mensajes/día |
 | **Premium mensual** | 6,99€/mes, 50 mensajes/día |
 | **Trial** | 3 días gratis en todos los planes Premium |
@@ -50,11 +50,11 @@ El objetivo del producto no es ofrecer terapia ni consejo psicológico profesion
 
 ### Mensaje de límite alcanzado (estilo Buda)
 
-Cuando el usuario alcanza los 3 mensajes gratuitos, Buda responde en su tono filosófico diciendo que el espacio del día ha terminado, e incluye el link de premium como invitación suave.
+Cuando el usuario alcanza los 7 mensajes gratuitos, Buda responde en su tono filosófico diciendo que el espacio del día ha terminado, e incluye el link de premium como invitación suave.
 
 Ejemplo:
 > "El río no fluye sin pausa, y tu mente también merece descanso.
-> Hemos compartido tres reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
+> Hemos compartido siete reflexiones hoy. Si deseas continuar este camino sin límites, puedes hacerlo aquí:
 > [link premium]
 > Si no, estaré aquí mañana con la misma calma."
 
@@ -313,7 +313,7 @@ talk-to-buda/
 │   ├── stripe.ts                       ← Cliente Stripe
 │   ├── conversation.ts                 ← Memoria/resúmenes
 │   ├── crisis-detection.ts             ← Keywords + msg fijo
-│   ├── rate-limit.ts                   ← Límites 3/50 msgs
+│   ├── rate-limit.ts                   ← Límites 7/50 msgs
 │   ├── response-cache.ts              ← Respuestas cacheadas (saludos, gracias, despedidas)
 │   ├── morning-message.ts             ← Mensaje matutino para premium
 │   ├── data-retention.ts              ← Limpieza automática

@@ -109,7 +109,7 @@ export default function Home() {
             Hablar con Buda en WhatsApp
           </a>
           <p className="mt-6 text-sm text-gray-400">
-            Gratis · 3 mensajes al día · Sin registro
+            Gratis · 7 mensajes al día · Sin registro
           </p>
         </FadeIn>
       </section>
@@ -243,7 +243,7 @@ export default function Home() {
           <FadeIn delay={100}>
             <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 text-left">
               <div className="space-y-3">
-                <PremiumFeature text="50 mensajes al día (vs 3 en plan gratis)" />
+                <PremiumFeature text="50 mensajes al día (vs 7 en plan gratis)" />
                 <PremiumFeature text="Oráculo: enseñanzas profundas generadas por IA avanzada" />
                 <PremiumFeature text="Reflexión matutina personalizada cada día a las 7am" />
                 <PremiumFeature text="Cancela cuando quieras desde WhatsApp" />
@@ -420,7 +420,7 @@ const faqData = [
   },
   {
     question: '¿Es gratis?',
-    answer: 'Sí. Puedes enviar hasta 3 mensajes al día de forma gratuita. Si quieres más, Premium te da 50 mensajes diarios desde 1,99€/semana.',
+    answer: 'Sí. Puedes enviar hasta 7 mensajes al día de forma gratuita. Si quieres más, Premium te da 50 mensajes diarios desde 1,99€/semana.',
   },
   {
     question: '¿Reemplaza terapia o ayuda profesional?',

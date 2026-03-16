@@ -27,7 +27,7 @@ export default function Terms() {
 
           <h2 className="text-xl font-medium text-gray-800 mt-8">4. Planes y precios</h2>
           <ul className="list-disc pl-6 space-y-2">
-            <li><strong>Plan gratuito:</strong> hasta 3 mensajes por día.</li>
+            <li><strong>Plan gratuito:</strong> hasta 7 mensajes por día.</li>
             <li><strong>Plan Premium semanal:</strong> 1,99€ por semana, hasta 50 mensajes por día. Suscripción semanal recurrente.</li>
             <li><strong>Plan Premium mensual:</strong> 6,99€ por mes, hasta 50 mensajes por día. Suscripción mensual recurrente.</li>
             <li>Todos los planes Premium incluyen un período de prueba gratuito de 3 días.</li>

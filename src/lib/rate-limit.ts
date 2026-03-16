@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import type { User } from '@/types';
 
-const FREE_DAILY_LIMIT = 3;
+const FREE_DAILY_LIMIT = 7;
 const PREMIUM_DAILY_LIMIT = 50;
 
 export interface RateLimitResult {
