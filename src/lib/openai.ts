@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { FEW_SHOT_EXAMPLES } from '@/lib/prompts/buddha-system';
 
 let _openai: OpenAI | null = null;
 
@@ -15,27 +16,18 @@ function getOpenAI(): OpenAI {
 // Brief reinforcement injected right before the user's last message.
 // GPT-4o-mini follows instructions closer to the end of the context much
 // more reliably than long system prompts at the beginning.
-// The brevity rule adapts to response depth so it doesn't contradict the system prompt.
 function getStyleReinforcement(depth?: 'warm' | 'balanced' | 'deep'): string {
   const brevityRule = depth === 'deep'
-    ? 'Máximo 1-2 frases. Sé breve e incisivo.'
+    ? 'Máximo 1-2 frases.'
     : 'Máximo 2-3 frases.';
 
-  return `[RECORDATORIO DE IDENTIDAD — BUDA]
-${brevityRule} NUNCA uses palabras de psicólogo (explorar, gestionar, herramientas, proceso, conectar con, validar, "es natural sentir", "¿cómo te hace sentir?", "¿qué podrías hacer?").
-Sé Buda: un maestro sabio Y amable. ENSEÑA con metáforas y afirmaciones. No solo preguntes — alterna entre enseñar, observar y preguntar.
-PROHIBIDO: "¿Y quién decidió...?", "¿Según quién?", "¿Y qué pasaría si...?" — busca otras formas.
-Si tu respuesta anterior terminó con pregunta, esta NO debe terminar con pregunta. Ofrece una enseñanza o metáfora.
-VARÍA tu forma — NO repitas la misma estructura dos veces seguidas:
-- Una metáfora cálida sin pregunta ("La vela que arde por ambos extremos da más luz, pero dura la mitad.")
-- Una afirmación directa que desmonte la premisa ("Llevas tanto tiempo corriendo que olvidaste por qué empezaste.")
-- Una observación compasiva + imagen ("Cargas dos piedras: lo que fue y lo que crees que debería ser.")
-- Una parábola breve de 2-3 frases — varía estructura, no siempre "Un [personaje] hizo [cosa]"
-- Solo a veces, una pregunta socrática breve — pero NUNCA dos respuestas seguidas con pregunta.
-Ejemplo — "Cómo controlo el miedo" → "El miedo es como el viento. No puedes atraparlo con las manos. Pero puedes plantar raíces profundas."
-Ejemplo — "No he logrado nada" → "Nada. Curiosa palabra para alguien que sigue de pie."
-Ejemplo — "No te entiendo" → "Déjame decirlo más simple." + reformulación concreta.
-Sé cálido. Que la gente quiera volver a hablar contigo.`;
+  return `[RECORDATORIO — BUDA]
+${brevityRule}
+1. Refleja algo ESPECÍFICO de lo que el usuario dijo. Usa sus palabras.
+2. Deja un GANCHO: que el usuario quiera responder.
+3. Si tu respuesta anterior terminó con pregunta, esta NO debe terminar con pregunta.
+4. PROHIBIDO: "¿Y quién decidió...?", "¿Según quién?", frases de coaching, metáforas genéricas de póster.
+5. Sé cálido, concreto y personal. Que quieran volver.`;
 }
 
 
@@ -45,11 +37,14 @@ export async function generateBudaResponse(
   model: 'gpt-4o' | 'gpt-4o-mini' = 'gpt-4o-mini',
   depth?: 'warm' | 'balanced' | 'deep'
 ): Promise<string> {
-  // Inject a style reminder right before the last user message
-  // so GPT-4o-mini doesn't drift into generic bot patterns
   const messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [
     { role: 'system', content: systemPrompt },
   ];
+
+  // Inject few-shot examples as real user/assistant messages right after system prompt.
+  // This is the most effective way to teach GPT-4o-mini the exact voice and quality we want.
+  // The model imitates these patterns much more reliably than it follows abstract rules.
+  messages.push(...FEW_SHOT_EXAMPLES);
 
   if (conversationHistory.length > 1) {
     // Add all history except the last message

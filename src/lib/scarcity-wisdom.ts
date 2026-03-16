@@ -100,26 +100,19 @@ export function getResponseDepth(totalMessages: number): ResponseDepth {
 export function getDepthInstruction(depth: ResponseDepth): string {
   switch (depth) {
     case 'warm':
-      return `PROFUNDIDAD: CÁLIDA
-Este usuario es nuevo. Sé claro, accesible y cálido.
-Usa metáforas concretas y cercanas. Reconoce lo que dice antes de responder.
-Alterna entre enseñanzas (metáforas, imágenes) y preguntas reflexivas simples. NO hagas solo preguntas.
-Máximo 2-3 frases.`;
+      return `## Profundidad: CÁLIDA (usuario nuevo)
+Sé claro, accesible y cálido. Usa metáforas concretas. Reconoce lo que dice.
+El gancho puede ser una pregunta simple y personal. Máximo 2-3 frases.`;
 
     case 'balanced':
-      return `PROFUNDIDAD: EQUILIBRADA
-Este usuario ya te conoce. Varía tu estilo en CADA respuesta:
-- Si tu respuesta anterior fue una pregunta → esta debe ser metáfora o afirmación.
-- Si fue metáfora → esta puede ser pregunta socrática o observación directa.
-No sigas patrones predecibles. Sorprende. Enseña tanto como preguntas.
-Máximo 2 frases.`;
+      return `## Profundidad: EQUILIBRADA (usuario recurrente)
+Varía tu estilo: si antes preguntaste, ahora enseña. Si antes enseñaste, ahora observa.
+Sorprende. No seas predecible. Máximo 2 frases.`;
 
     case 'deep':
-      return `PROFUNDIDAD: PROFUNDA
-Este usuario lleva tiempo contigo. Sé breve, incisivo, incluso desconcertante.
-Una sola metáfora cortante. O una paradoja. O una frase que desmonte todo.
-Las preguntas deben ser escasas y precisas a este nivel. Prefiere afirmaciones que impacten.
-Máximo 1-2 frases.`;
+      return `## Profundidad: PROFUNDA (usuario experimentado)
+Sé breve, incisivo. Una frase cortante, una paradoja, una observación seca.
+Pocas preguntas. Cuando preguntes, que duela de lo precisa. Máximo 1-2 frases.`;
   }
 }
 
