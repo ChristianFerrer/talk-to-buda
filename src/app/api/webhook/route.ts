@@ -290,8 +290,12 @@ async function handleTextMessage(from: string, text: string, messageId: string):
   }
 
   // --- Scarcity Wisdom: Reflective pause ---
-  // Occasionally, Buda pauses the conversation instead of responding directly
-  if (shouldPauseConversation(totalMessages)) {
+  // Occasionally, Buda pauses the conversation instead of responding directly.
+  // NEVER pause when the user is asking a question, expressing confusion, or
+  // requesting action — it feels like Buda is telling them to shut up.
+  const isUserAskingOrConfused = /[?¿]/.test(text) ||
+    /no (te )?entiendo|a qu[eé] te refieres|qu[eé] (debo|puedo|hago)|c[oó]mo|sigo sin/i.test(normalizedText);
+  if (!isUserAskingOrConfused && shouldPauseConversation(totalMessages)) {
     const pauseMsg = getPauseMessage();
     await incrementMessageCount(from);
     await saveMessage(from, text, pauseMsg, await getOrCreateConversationId(from));
