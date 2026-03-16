@@ -210,6 +210,27 @@ async function handleTextMessage(from: string, text: string, messageId: string):
     return;
   }
 
+  // Premium request — generate token and send link
+  if (normalizedText === 'premium' || normalizedText === 'quiero premium' || normalizedText === 'hacerme premium' || normalizedText === 'hazte premium') {
+    // Check if already premium
+    const { data: existingPremium } = await supabase
+      .from('users')
+      .select('is_premium, is_vip')
+      .eq('user_phone', from)
+      .maybeSingle();
+
+    if (existingPremium?.is_premium || existingPremium?.is_vip) {
+      await sendWhatsAppMessage(from, 'Ya caminas el sendero Premium. Disfruta de tus conversaciones sin límites. 🙏');
+      return;
+    }
+
+    await ensureUserExists(from);
+    const token = await generatePremiumToken(from);
+    const premiumLink = `${APP_URL}/premium?token=${token}`;
+    await sendWhatsAppMessage(from, `Si deseas continuar este camino sin límites, puedes activar Premium aquí:\n\n${premiumLink}\n\nIncluye 3 días gratis para explorar con calma.`);
+    return;
+  }
+
   // Rate limiting
   console.log('[handleMsg] Checking rate limit...');
   const rateLimit = await checkRateLimit(from);
