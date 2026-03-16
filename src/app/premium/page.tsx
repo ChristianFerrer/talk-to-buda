@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
+const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890').replace(/[^0-9]/g, '');
+const WHATSAPP_PREMIUM_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Quiero Premium')}`;
+
 function PremiumContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -13,7 +16,7 @@ function PremiumContent() {
 
   const handleCheckout = async () => {
     if (!token) {
-      setError('Enlace inválido. Escribe a Buda para obtener un enlace de Premium.');
+      window.location.href = WHATSAPP_PREMIUM_LINK;
       return;
     }
 
@@ -120,7 +123,7 @@ function PremiumContent() {
           disabled={loading}
           className="w-full sm:w-auto bg-sage-600 hover:bg-sage-700 disabled:bg-gray-300 text-white px-10 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none"
         >
-          {loading ? 'Procesando...' : 'Empezar 3 días gratis'}
+          {loading ? 'Procesando...' : 'Hacerme Premium'}
         </button>
 
         {error && (
