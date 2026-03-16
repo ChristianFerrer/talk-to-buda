@@ -56,8 +56,14 @@ export default function Home() {
             <img src="/lotus1.png" alt="Lotus" className="w-6 h-6" />
             <span className="text-sm font-medium tracking-wide">Habla con Buda</span>
           </a>
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-2 sm:gap-6">
             <a href="/premium" className="text-xs text-gray-500 hover:text-gray-700 transition-colors hidden sm:inline">Premium</a>
+            <a
+              href="/premium"
+              className="sm:hidden inline-flex items-center bg-[#0984e3] hover:bg-[#0770c2] text-white px-3 py-2 rounded-xl text-sm font-medium transition-all"
+            >
+              Premium
+            </a>
             <a
               href={WHATSAPP_LINK}
               target="_blank"
