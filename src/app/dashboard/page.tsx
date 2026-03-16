@@ -228,6 +228,91 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* Financials */}
+      <section className="mb-10">
+        <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Costos e Ingresos (mes actual)</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Costs */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">Costos estimados (USD)</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Mensajes GPT (4o-mini)</span>
+                <span className="text-sm font-mono text-gray-700">
+                  {(metrics.financials.messagesThisMonth - metrics.financials.cachedMessagesThisMonth - metrics.financials.oracleCallsThisMonth).toLocaleString()} msgs
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Mensajes cacheados (sin costo)</span>
+                <span className="text-sm font-mono text-sage-600">{metrics.financials.cachedMessagesThisMonth.toLocaleString()} msgs</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Oráculo (GPT-4o)</span>
+                <span className="text-sm font-mono text-gray-700">{metrics.financials.oracleCallsThisMonth} calls</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Resúmenes (GPT-4o)</span>
+                <span className="text-sm font-mono text-gray-700">{metrics.financials.summaryUpdatesThisMonth} updates</span>
+              </div>
+              <div className="border-t border-gray-100 pt-3 mt-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm text-gray-500">GPT-4o-mini</span>
+                  <span className="text-sm font-mono text-gray-700">${metrics.financials.estimatedCostGpt4oMini.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm text-gray-500">GPT-4o</span>
+                  <span className="text-sm font-mono text-gray-700">${metrics.financials.estimatedCostGpt4o.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                  <span className="text-sm font-medium text-gray-700">Total estimado</span>
+                  <span className="text-base font-mono font-medium text-gray-900">${metrics.financials.totalEstimatedCost.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">Ingresos estimados (EUR)</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Suscripciones semanales</span>
+                <span className="text-sm font-mono text-gray-700">{metrics.financials.activeWeeklySubscriptions} activas</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Suscripciones mensuales</span>
+                <span className="text-sm font-mono text-gray-700">{metrics.financials.activeMonthlySubscriptions} activas</span>
+              </div>
+              <div className="border-t border-gray-100 pt-3 mt-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm text-gray-500">MRR bruto</span>
+                  <span className="text-sm font-mono text-gray-700">{`€${metrics.financials.estimatedMRR.toFixed(2)}`}</span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm text-gray-500">Comisiones Stripe</span>
+                  <span className="text-sm font-mono text-red-400">{`-€${metrics.financials.estimatedStripeFeesMonthly.toFixed(2)}`}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                  <span className="text-sm font-medium text-gray-700">Ingreso neto</span>
+                  <span className="text-base font-mono font-medium text-gray-900">{`€${metrics.financials.estimatedNetRevenue.toFixed(2)}`}</span>
+                </div>
+              </div>
+              <div className="border-t border-gray-100 pt-3 mt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700">Margen estimado</span>
+                  <span className={`text-lg font-mono font-medium ${metrics.financials.estimatedMarginPercent >= 70 ? 'text-green-600' : metrics.financials.estimatedMarginPercent >= 40 ? 'text-yellow-600' : 'text-red-500'}`}>
+                    {metrics.financials.estimatedMarginPercent}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-gray-300 mt-3">
+          Costos basados en estimaciones de tokens por mensaje. Mensajes cacheados (~30%) no consumen tokens. USD/EUR ~0.92.
+        </p>
+      </section>
+
       {/* Activity Chart */}
       <section className="mb-10">
         <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Actividad (últimos 30 días)</h2>

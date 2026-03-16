@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getStripe } from '@/lib/stripe';
 import type { DashboardMetrics, MetricDetail } from '@/types';
 
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || '';
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0];
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const firstDayOfMonth = `${today.substring(0, 7)}-01`;
 
     // Parallel queries
     const [
@@ -67,6 +69,11 @@ export async function POST(request: NextRequest) {
       messagesTodayTimestampsResult,
       conversationsTodayDetailResult,
       premiumUsersListResult,
+      // Financial queries
+      messagesThisMonthResult,
+      oracleCallsThisMonthResult,
+      summaryUpdatesThisMonthResult,
+      activePremiumResult,
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('users').select('*', { count: 'exact', head: true }).gte('first_seen', `${today}T00:00:00`),
@@ -92,6 +99,14 @@ export async function POST(request: NextRequest) {
       supabase.from('messages').select('conversation_id, user_phone, timestamp').gte('timestamp', `${today}T00:00:00`),
       // Detail: premium users list
       supabase.from('premium_users').select('user_phone, status, started_at').order('started_at', { ascending: false }).limit(20),
+      // Financial: messages this month (total GPT calls)
+      supabase.from('messages').select('*', { count: 'exact', head: true }).gte('timestamp', `${firstDayOfMonth}T00:00:00`),
+      // Financial: oracle calls this month
+      supabase.from('messages').select('*', { count: 'exact', head: true }).gte('timestamp', `${firstDayOfMonth}T00:00:00`).in('user_message', ['Oráculo', 'oráculo', 'oraculo', 'oracle', 'Oracle']),
+      // Financial: summary updates this month
+      supabase.from('user_summaries').select('*', { count: 'exact', head: true }).gte('updated_at', `${firstDayOfMonth}T00:00:00`),
+      // Financial: active premium subscriptions
+      supabase.from('premium_users').select('stripe_subscription_id, status').in('status', ['active', 'trialing']),
     ]);
 
     // Calculate unique conversations today
@@ -239,6 +254,86 @@ export async function POST(request: NextRequest) {
       ]),
     };
 
+    // --- Financial calculations ---
+    const messagesThisMonth = messagesThisMonthResult.count || 0;
+    const oracleCallsThisMonth = oracleCallsThisMonthResult.count || 0;
+    const summaryUpdatesThisMonth = summaryUpdatesThisMonthResult.count || 0;
+
+    // Estimate cached messages (~30% of total based on greeting/thanks/farewell patterns)
+    // This is approximate; cached messages don't hit GPT at all
+    const estimatedCachedPercent = 0.30;
+    const cachedMessagesThisMonth = Math.round(messagesThisMonth * estimatedCachedPercent);
+    const gptMessagesThisMonth = messagesThisMonth - cachedMessagesThisMonth - oracleCallsThisMonth;
+
+    // Cost estimates (USD)
+    // GPT-4o-mini: ~1850 input tokens (system+fewshot+history) + ~100 output tokens per message
+    // Pricing: $0.15/1M input, $0.60/1M output
+    const costPerGpt4oMiniMsg = (1850 * 0.00000015) + (100 * 0.0000006); // ~$0.000338
+    const estimatedCostGpt4oMini = Math.round(gptMessagesThisMonth * costPerGpt4oMiniMsg * 100) / 100;
+
+    // GPT-4o: Oracle (~500 input + ~200 output) + Summaries (~2000 input + ~300 output)
+    // Pricing: $2.50/1M input, $10.00/1M output
+    const costPerOracle = (500 * 0.0000025) + (200 * 0.00001); // ~$0.00325
+    const costPerSummary = (2000 * 0.0000025) + (300 * 0.00001); // ~$0.008
+    const estimatedCostGpt4o = Math.round(
+      (oracleCallsThisMonth * costPerOracle + summaryUpdatesThisMonth * costPerSummary) * 100
+    ) / 100;
+
+    const totalEstimatedCost = Math.round((estimatedCostGpt4oMini + estimatedCostGpt4o) * 100) / 100;
+
+    // Revenue calculations (EUR)
+    // Query Stripe for actual subscription intervals
+    let activeWeekly = 0;
+    let activeMonthly = 0;
+    const activeSubIds = (activePremiumResult.data || [])
+      .map((u: { stripe_subscription_id: string; status: string }) => u.stripe_subscription_id)
+      .filter(Boolean);
+
+    if (activeSubIds.length > 0) {
+      try {
+        const stripe = getStripe();
+        // Fetch subscription details in batches of 10
+        const subPromises = activeSubIds.slice(0, 50).map((id: string) =>
+          stripe.subscriptions.retrieve(id).catch(() => null)
+        );
+        const subscriptions = await Promise.all(subPromises);
+        for (const sub of subscriptions) {
+          if (!sub || !('items' in sub)) continue;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const interval = (sub as any).items?.data?.[0]?.price?.recurring?.interval;
+          if (interval === 'week') activeWeekly++;
+          else if (interval === 'month') activeMonthly++;
+        }
+      } catch (e) {
+        console.error('[dashboard] Stripe subscription fetch error:', e);
+        // Fallback: assume all monthly
+        activeMonthly = activeSubIds.length;
+      }
+    }
+
+    // Also count VIP users (they don't pay but have premium access)
+    const activePremiumSubscriptions = activeWeekly + activeMonthly;
+
+    // MRR: weekly × €1.99 × 4.33 (avg weeks/month) + monthly × €6.99
+    const weeklyMRR = activeWeekly * 1.99 * 4.33;
+    const monthlyMRR = activeMonthly * 6.99;
+    const estimatedMRR = Math.round((weeklyMRR + monthlyMRR) * 100) / 100;
+
+    // Stripe fees: 2.9% + €0.25 per transaction
+    // Weekly: 4.33 transactions/month, Monthly: 1 transaction/month
+    const weeklyStripeFees = activeWeekly * (4.33 * (1.99 * 0.029 + 0.25));
+    const monthlyStripeFees = activeMonthly * (6.99 * 0.029 + 0.25);
+    const estimatedStripeFeesMonthly = Math.round((weeklyStripeFees + monthlyStripeFees) * 100) / 100;
+
+    const estimatedNetRevenue = Math.round((estimatedMRR - estimatedStripeFeesMonthly) * 100) / 100;
+
+    // Convert cost to EUR for margin calculation (approximate rate)
+    const usdToEur = 0.92;
+    const costInEur = totalEstimatedCost * usdToEur;
+    const estimatedMarginPercent = estimatedNetRevenue > 0
+      ? Math.round(((estimatedNetRevenue - costInEur) / estimatedNetRevenue) * 1000) / 10
+      : 0;
+
     const metrics: DashboardMetrics = {
       overview: {
         totalUsers,
@@ -260,6 +355,22 @@ export async function POST(request: NextRequest) {
       premium: {
         premiumUsers: premiumUsersResult.count || 0,
         conversionRate: totalUsers > 0 ? Math.round(((premiumUsersResult.count || 0) / totalUsers) * 1000) / 10 : 0,
+      },
+      financials: {
+        messagesThisMonth,
+        cachedMessagesThisMonth,
+        oracleCallsThisMonth,
+        summaryUpdatesThisMonth,
+        estimatedCostGpt4oMini,
+        estimatedCostGpt4o,
+        totalEstimatedCost,
+        activePremiumSubscriptions,
+        activeWeeklySubscriptions: activeWeekly,
+        activeMonthlySubscriptions: activeMonthly,
+        estimatedMRR,
+        estimatedStripeFeesMonthly,
+        estimatedNetRevenue,
+        estimatedMarginPercent,
       },
       details,
     };

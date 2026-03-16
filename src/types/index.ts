@@ -114,5 +114,24 @@ export interface DashboardMetrics {
     premiumUsers: number;
     conversionRate: number;
   };
+  financials: {
+    // Costs (estimated)
+    messagesThisMonth: number;
+    cachedMessagesThisMonth: number;
+    oracleCallsThisMonth: number;
+    summaryUpdatesThisMonth: number;
+    estimatedCostGpt4oMini: number;   // USD
+    estimatedCostGpt4o: number;       // USD
+    totalEstimatedCost: number;       // USD
+    // Revenue
+    activePremiumSubscriptions: number;
+    activeWeeklySubscriptions: number;
+    activeMonthlySubscriptions: number;
+    estimatedMRR: number;             // EUR
+    estimatedStripeFeesMonthly: number; // EUR
+    estimatedNetRevenue: number;      // EUR
+    // Margin
+    estimatedMarginPercent: number;
+  };
   details: Record<string, MetricDetail>;
 }
