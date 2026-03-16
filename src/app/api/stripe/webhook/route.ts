@@ -45,21 +45,55 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function normalizePhone(phone: string): string {
+  // Strip all non-digit characters and ensure it starts with country code
+  const digits = phone.replace(/[^0-9]/g, '');
+  // If it starts with '+' the replace already removed it, digits are clean
+  return digits;
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const userPhone = session.metadata?.user_phone;
+  let userPhone = session.metadata?.user_phone;
   const tokenId = session.metadata?.token_id;
 
+  // If no phone from token, get it from Stripe's phone collection
+  if (!userPhone && session.customer_details?.phone) {
+    userPhone = normalizePhone(session.customer_details.phone);
+  }
+
   if (!userPhone) {
-    console.error('No user_phone in session metadata');
+    console.error('No user_phone in session metadata or customer details');
     return;
   }
 
-  // Mark token as used
+  // Mark token as used (only if flow came from token)
   if (tokenId) {
     await supabase
       .from('premium_tokens')
       .update({ used: true })
       .eq('id', tokenId);
+  }
+
+  // Ensure user exists in users table (for web-direct signups)
+  if (session.metadata?.source === 'web_direct') {
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('user_phone')
+      .eq('user_phone', userPhone)
+      .maybeSingle();
+
+    if (!existingUser) {
+      await supabase.from('users').insert({
+        user_phone: userPhone,
+        first_seen: new Date().toISOString(),
+        last_seen: new Date().toISOString(),
+        total_messages: 0,
+        is_premium: true,
+        is_vip: false,
+        message_count_today: 0,
+        last_message_date: new Date().toISOString().split('T')[0],
+      });
+    }
   }
 
   // Update or create premium user record

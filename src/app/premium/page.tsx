@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
-const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890').replace(/[^0-9]/g, '');
-const WHATSAPP_PREMIUM_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Quiero Premium')}`;
 
 function PremiumContent() {
   const searchParams = useSearchParams();
@@ -15,11 +13,6 @@ function PremiumContent() {
   const [plan, setPlan] = useState<'monthly' | 'weekly'>('weekly');
 
   const handleCheckout = async () => {
-    if (!token) {
-      window.location.href = WHATSAPP_PREMIUM_LINK;
-      return;
-    }
-
     setLoading(true);
     setError('');
 
