@@ -245,9 +245,9 @@ export default function Home() {
             </div>
             <a
               href="/premium"
-              className="inline-flex items-center gap-2 bg-sage-600 hover:bg-sage-700 text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 bg-[#0984e3] hover:bg-[#0770c2] text-white px-8 py-4 rounded-2xl text-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              Empezar 3 días gratis
+              Hazte Premium
             </a>
           </FadeIn>
         </div>
