@@ -31,9 +31,9 @@ export function delay(ms: number): Promise<void> {
 
 const PRELUDE_MESSAGES = [
   'Hmm.',
-  'Un momento.',
-  'Déjame pensar.',
   'Mmm…',
+  '...',
+  'Ah.',
 ];
 
 /**
@@ -101,23 +101,24 @@ export function getDepthInstruction(depth: ResponseDepth): string {
   switch (depth) {
     case 'warm':
       return `PROFUNDIDAD: CÁLIDA
-Este usuario es nuevo. Sé claro y accesible, pero NO ansioso ni servicial.
-No consueles directamente. Haz preguntas simples que inviten a reflexionar.
-Usa metáforas concretas y cercanas, no abstractas.
+Este usuario es nuevo. Sé claro, accesible y cálido.
+Usa metáforas concretas y cercanas. Reconoce lo que dice antes de responder.
+Alterna entre enseñanzas (metáforas, imágenes) y preguntas reflexivas simples. NO hagas solo preguntas.
 Máximo 2-3 frases.`;
 
     case 'balanced':
       return `PROFUNDIDAD: EQUILIBRADA
-Este usuario ya te conoce. Sé socrático: una buena pregunta vale más que una metáfora.
-Varía: a veces solo una pregunta, a veces solo una observación, a veces ironía sutil.
-No sigas patrones predecibles. Sorprende.
+Este usuario ya te conoce. Varía tu estilo en CADA respuesta:
+- Si tu respuesta anterior fue una pregunta → esta debe ser metáfora o afirmación.
+- Si fue metáfora → esta puede ser pregunta socrática o observación directa.
+No sigas patrones predecibles. Sorprende. Enseña tanto como preguntas.
 Máximo 2 frases.`;
 
     case 'deep':
       return `PROFUNDIDAD: PROFUNDA
 Este usuario lleva tiempo contigo. Sé breve, incisivo, incluso desconcertante.
-Una sola pregunta socrática. O una sola frase que corte.
-Puedes usar ironía, paradoja, o silencio (una respuesta muy corta).
+Una sola metáfora cortante. O una paradoja. O una frase que desmonte todo.
+Las preguntas deben ser escasas y precisas a este nivel. Prefiere afirmaciones que impacten.
 Máximo 1-2 frases.`;
   }
 }
